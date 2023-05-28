@@ -868,7 +868,7 @@ b819B   STA (screenLineLoPtr),Y
         DEY 
         BNE b819B
         LDA screenLineLoPtr
-        ADC #$28
+        ADC #GRID_WIDTH
         STA screenLineLoPtr
         PLA 
         ADC #$00
