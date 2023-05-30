@@ -19,106 +19,92 @@
 .feature loose_char_term
 
 .segment "ZEROPAGE"
-currentXPosition                             = $02
-currentYPosition                             = $03
-currentCharacter                             = $04
-colorForCurrentCharacter                     = $05
-gridStartLoPtr                               = $06
-gridStartHiPtr                               = $07
-tempCounter                                  = $08
-tempCounter2                                 = $09
-previousShipXPosition                        = $0A
-previousShipYPosition                        = $0B
-shipMovementDirection                        = $0C
-joystickInput                                = $0D
-frameControlCounter                          = $0E
-bulletType                                   = $10
-bulletXPosition                              = $11
-bulletYPosition                              = $12
-bulletFrameCounter                           = $13
-bottomZapperXPos                             = $14
-leftZapperYPos                               = $15
-zapperFrameCounter                           = $16
-zapperSwitch                                 = $17
-currentLaserInterval                         = $18
-laserIntervalForLevel                        = $19
-oldLeftLazerXPos                             = $1A
-oldBottomZapperXPos                          = $1B
-oldLeftZapperYPos                            = $1C
-laserChar                                    = $1D
-podDestroyedSoundEffect                      = $1E
-droidAnimationFrameRate                      = $22
-originalNoOfDronesInDroidSquadInCurrentLevel = $23
-currentNoOfDronesLeftInCurrentDroidSquad     = $24
-noOfDroidSquadsLeftInCurrentLevel            = $25
-counterBetweenDroidSquads                    = $26
-initialCounterBetweenDroidSquads             = $27
-currentDroidsLeft                            = $28
-currentDroidChar                             = $29
-currentLevel                                 = $2A
-mainCounterBetweenLasers                     = $2B
-initialMainCounterBetweenLasers              = $2C
-currentCounterBetweenLsers                   = $2D
-initialCounterBetweenLasers                  = $2E
-cameloidAnimationInteveralForLevel           = $2F
-currentCameloidAnimationInterval             = $30
-currentCameloidsLeft                         = $31
-currrentNoOfCameloidsAtOneTimeForLevel       = $32
-originalNoOFCameloidsAtOneTimeForLevel       = $33
-noOfCameloidsLeftInCurrentLevel              = $34
-snitchCurrentXPos                            = $35
-snitchStateControl                           = $36
-currentSnitchAnimationInterval               = $37
-snitchAnimationIntervalForLevel              = $38
-explosionSoundControl                        = $39
-deflexorFrameRate                            = $3A
-currentDeflexorIndex                         = $3B
-currentDeflexorColor                         = $3C
-deflexorSoundControl                         = $3D
-deflexorIndexForLevel                        = $3E
-currentLevelConfiguration                    = $3F
-mysteryBonusEarned                           = $40
-bonusBits                                    = $41
-screenLineLoPtr                              = $48
-screenLineHiPtr                              = $49
-rollingGridPreviousChar                      = $50
-cyclesToWaste                                = $5A
-lastKeyPressed                               = $C5
+currentXPosition                             .res 1
+currentYPosition                             .res 1
+currentCharacter                             .res 1
+colorForCurrentCharacter                     .res 1
+gridStartLoPtr                               .res 1
+gridStartHiPtr                               .res 1
+tempCounter                                  .res 1
+tempCounter2                                 .res 1
+previousShipXPosition                        .res 1
+previousShipYPosition                        .res 1
+shipMovementDirection                        .res 1
+joystickInput                                .res 1
+frameControlCounter                          .res 1
+bulletType                                   .res 1
+bulletXPosition                              .res 1
+bulletYPosition                              .res 1
+bulletFrameCounter                           .res 1
+bottomZapperXPos                             .res 1
+leftZapperYPos                               .res 1
+zapperFrameCounter                           .res 1
+zapperSwitch                                 .res 1
+currentLaserInterval                         .res 1
+laserIntervalForLevel                        .res 1
+oldLeftLazerXPos                             .res 1
+oldBottomZapperXPos                          .res 1
+oldLeftZapperYPos                            .res 1
+laserChar                                    .res 1
+podDestroyedSoundEffect                      .res 1
+droidAnimationFrameRate                      .res 1
+originalNoOfDronesInDroidSquadInCurrentLevel .res 1
+currentNoOfDronesLeftInCurrentDroidSquad     .res 1
+noOfDroidSquadsLeftInCurrentLevel            .res 1
+counterBetweenDroidSquads                    .res 1
+initialCounterBetweenDroidSquads             .res 1
+currentDroidsLeft                            .res 1
+currentDroidChar                             .res 1
+currentLevel                                 .res 1
+mainCounterBetweenLasers                     .res 1
+initialMainCounterBetweenLasers              .res 1
+currentCounterBetweenLsers                   .res 1
+initialCounterBetweenLasers                  .res 1
+cameloidAnimationInteveralForLevel           .res 1
+currentCameloidAnimationInterval             .res 1
+currentCameloidsLeft                         .res 1
+currrentNoOfCameloidsAtOneTimeForLevel       .res 1
+originalNoOFCameloidsAtOneTimeForLevel       .res 1
+noOfCameloidsLeftInCurrentLevel              .res 1
+snitchCurrentXPos                            .res 1
+snitchStateControl                           .res 1
+currentSnitchAnimationInterval               .res 1
+snitchAnimationIntervalForLevel              .res 1
+explosionSoundControl                        .res 1
+deflexorFrameRate                            .res 1
+currentDeflexorIndex                         .res 1
+currentDeflexorColor                         .res 1
+deflexorSoundControl                         .res 1
+deflexorIndexForLevel                        .res 1
+currentLevelConfiguration                    .res 1
+mysteryBonusEarned                           .res 1
+bonusBits                                    .res 1
+screenLineLoPtr                              .res 1
+screenLineHiPtr                              .res 1
+rollingGridPreviousChar                      .res 1
+cyclesToWaste                                .res 1
+lastKeyPressed                               .res 1
+
+soundModeAndVol                              .res 1
+voice1FreqHiVal                              .res 1
+voice2FreqHiVal                              .res 1
+voice2FreqHiVal2                             .res 1
+voice3FreqHiVal                              .res 1
+
+screenBufferLoPtr             .RES 1
+screenBufferHiPtr             .RES 1
+
+previousFrameButtons          .res 1
+buttons                       .res 1
+pressedButtons                .res 1
+releasedButtons               .res 1
+
 
 .segment "CODE"
-previousLasersLoPtrsArray                    = $1300
-previousLasersHiPtrArray                     = $1320
-previousHiScore                              = $14F0
-wrongCharSetLocation                         = $1509
-droidSquadsXPosArray                         = $1900
-droidSquadsYPosArray                         = $1980
-
-droidSquadState                              = $1A00
-
-cameloidsCurrentXPosArray                    = $1A80
-cameloidsCurrentYPosArray                    = $1B00
-cameloidsColorArray                          = $1B80
-
-currentDeflexorXPosArray                     = $1C00
-currentDeflexorYPosArray                     = $1C80
-mysteryBonusPerformance                      = $1D00
-charSetLocation                              = $2000
-alphabetCharsetStorage                       = $2200
-scrollingTextStorage                         = $2400
-
-soundModeAndVol                              = $4000
-voice1FreqHiVal                              = $4001
-voice2FreqHiVal                              = $4002
-voice2FreqHiVal2                             = $4003
-voice3FreqHiVal                              = $4004
 ;
 ; **** POINTERS **** 
 ;
-SCREEN_RAM                                   = $0400
-COLOR_RAM                                    = $D800
-screenLinesLoPtrArray                        = $0340
-screenLinesHiPtrArray                        = $0360
-OFFSET_TO_COLOR_RAM                          = $D4
+OFFSET_TO_COLOR_RAM                          = $20
 
 BLACK                                        = $00
 WHITE                                        = $01
@@ -194,6 +180,15 @@ DOT2                                         = $77
 BIG_DOT                                      = $78
 COMMA                                        = $79
 
+PAD_A              = $01
+PAD_B              = $02
+PAD_SELECT         = $04
+PAD_START          = $08
+PAD_U              = $10
+PAD_D              = $20
+PAD_L              = $40
+PAD_R              = $80
+
 .segment "RAM"
 screenLinesLoPtrArray .res 30
 screenLinesHiPtrArray .res 30
@@ -213,13 +208,33 @@ screenBufferHiPtrArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00
 
+previousLasersLoPtrsArray                    .res 32
+previousLasersHiPtrArray                     .res 32
+previousHiScore                              .res 8
+wrongCharSetLocation                         .res 1
+droidSquadsXPosArray                         .res $80
+droidSquadsYPosArray                         .res $80
+
+droidSquadState                              .res $80
+
+cameloidsCurrentXPosArray                    .res $80
+cameloidsCurrentYPosArray                    .res $80
+cameloidsColorArray                          .res $80
+
+currentDeflexorXPosArray                     .res $80
+currentDeflexorYPosArray                     .res $80
+mysteryBonusPerformance                      .res $80
+charSetLocation                              .res $200
+alphabetCharsetStorage                       .res $200
+scrollingTextStorage                         .res $200
+
 .segment "CODE"
 ; The raw address for PPU's screen ram.
 PPU_SCREEN_RAM     = $2000
 ; SCREEN_RAM is our address to screenBuffer
 SCREEN_RAM         = $6020
 COLOR_RAM          = $8020
-GRID_HEIGHT        = 28 
+GRID_HEIGHT        = 21 
 GRID_WIDTH         = 31 
 GRID_TOP           = 2
 GRID_LEFT          = 2
@@ -580,7 +595,7 @@ WriteCurrentCharacterToCurrentXYPos
         JSR GetLinePtrForCurrentYPosition
         JSR AddPixelToNMTUpdate
         ; If we've got a few to write, let them do that now.
-        CPX #60
+        CPX #37
         BMI @UpdateComplete
         JSR PPU_Update
 
@@ -588,6 +603,14 @@ WriteCurrentCharacterToCurrentXYPos
 ;       LDA colorForCurrentCharacter
 @UpdateComplete
         RTS
+
+;-------------------------------------------------------------------------
+; GetCharacterAtCurrentXYPos
+;-------------------------------------------------------------------------
+GetCharacterAtCurrentXYPos
+        JSR GetScreenBufferForCurrentPosition
+        LDA (screenBufferLoPtr),Y
+        RTS 
 
 ;-------------------------------------------------------
 ; GamepadPoll
@@ -659,6 +682,12 @@ b8017   DEY
 ; InitializeScreenLinePtrArray
 ;-------------------------------------------------------------------------
 InitializeScreenLinePtrArray
+        ; Create a Hi/Lo pointer to $2000
+        LDA #>PPU_SCREEN_RAM
+        STA screenLineHiPtr
+        LDA #<PPU_SCREEN_RAM
+        STA screenLineLoPtr
+
         ; Populate a table of hi/lo ptrs to the color RAM
         ; of each line on the screen (e.g. $2000,
         ; $02020). Each entry represents a single
@@ -678,8 +707,79 @@ InitializeScreenLinePtrArray
         INX 
         CPX #$1E
         BNE @Loop
+
+        ; Create a Hi/Lo pointer to  the screen buffer.
+        LDA #>screenBuffer
+        STA screenBufferHiPtr
+        LDA #<screenBuffer
+        STA screenBufferLoPtr
+
+        LDX #$00
+@Loop2  LDA screenBufferHiPtr
+        STA screenBufferHiPtrArray,X
+        LDA screenBufferLoPtr
+        STA screenBufferLoPtrArray,X
+        CLC 
+        ADC #$20
+        STA screenBufferLoPtr
+        LDA screenBufferHiPtr
+        ADC #$00
+        STA screenBufferHiPtr
+        INX 
+        CPX #$1E
+        BNE @Loop2
         RTS
 
+;-------------------------------------------------------------------------
+; WriteScreenBufferToNMT
+; Write the screen buffer to NMT all in one go. Should be useful given
+; the way Gridrunner updates a lot of stuff directly to RAM and we can
+; just batch it all in one go.
+;-------------------------------------------------------------------------
+WriteScreenBufferToNMT
+        JSR PPU_Off
+
+        ; first nametable, start by clearing to empty
+        LDA $2002 ; reset latch
+        LDA #$20
+        STA $2006
+        LDA #$00
+        STA $2006
+
+        ; empty nametable
+        LDX #0 ; 30 rows
+        :
+          LDA screenBufferLoPtrArray,X
+          STA screenBufferLoPtr
+          LDA screenBufferHiPtrArray,X
+          STA screenBufferHiPtr
+          LDY #0 ; 32 columns
+          :
+            LDA (screenBufferLoPtr),Y
+            STA $2007
+            INY
+            CPY #32
+            BNE :-
+          INX
+          CPX #30
+          BNE :--
+
+; Write the color attribute table.
+        LDA $2002             ; read PPU status to reset the high/low latch
+        LDA #$23
+        STA $2006             ; write the high byte of $23C0 address
+        LDA #$C0
+        STA $2006             ; write the low byte of $23C0 address
+        LDX #$00              ; start out at 0
+LoadAttributeLoop
+        LDA bannerAttribute, x      ; load data from address (bannerAttribute + the value in x)
+        STA $2007             ; write to PPU
+        INX                   ; X = X + 1
+        CPX #$08              ; Compare X to hex $08, decimal 8 - copying 8 bytes
+        BNE LoadAttributeLoop
+
+        JSR PPU_Update
+        RTS 
 
 ;-------------------------------------------------------------------------
 ; ClearScreen
@@ -723,14 +823,14 @@ InitializeGame
 
         LDA #$00
         LDX #$18
-b8089   STA $D400,X  ;Voice 1: Frequency Control - Low-Byte
+b8089   ;STA $D400,X  ;Voice 1: Frequency Control - Low-Byte
         DEX 
         BNE b8089
 
         LDA #$00
         STA soundModeAndVol
-        STA $D40C    ;Voice 2: Attack / Decay Cycle Control
-        STA $D413    ;Voice 3: Attack / Decay Cycle Control
+        ;STA $D40C    ;Voice 2: Attack / Decay Cycle Control
+        ;STA $D413    ;Voice 3: Attack / Decay Cycle Control
 
         LDA #$30
         LDX #$07
@@ -739,17 +839,17 @@ b809E   STA previousHiScore,X
         BNE b809E
 
         LDA #$A0
-        STA $D406    ;Voice 1: Sustain / Release Cycle Control
-        STA $D40D    ;Voice 2: Sustain / Release Cycle Control
-        STA $D414    ;Voice 3: Sustain / Release Cycle Control
+        ;STA $D406    ;Voice 1: Sustain / Release Cycle Control
+        ;STA $D40D    ;Voice 2: Sustain / Release Cycle Control
+        ;STA $D414    ;Voice 3: Sustain / Release Cycle Control
         LDA #$80
-        STA $0291
+        ;STA $0291
         LDA #$00
         NOP 
-        STA $D021    ;Background Color 0
-        STA $D020    ;Border Color
+        ;STA $D021    ;Background Color 0
+        ;STA $D020    ;Border Color
         LDA #$18
-        STA $D018    ;VIC Memory Control Register
+        ;STA $D018    ;VIC Memory Control Register
         JSR ClearScreen
         JSR InitializeScreenLinePtrArray
         JMP SetupScreen
@@ -759,7 +859,7 @@ b809E   STA previousHiScore,X
 ;-------------------------------------------------------------------------
 PlayNote1
         LDA #$11
-        STA $D40B    ;Voice 2: Control Register
+        ;STA $D40B    ;Voice 2: Control Register
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -767,7 +867,7 @@ PlayNote1
 ;-------------------------------------------------------------------------
 PlayNote2
         LDA #$21
-        STA $D412    ;Voice 3: Control Register
+        ;STA $D412    ;Voice 3: Control Register
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -775,7 +875,7 @@ PlayNote2
 ;-------------------------------------------------------------------------
 PlayNote3
         LDA #$81
-        STA $D404    ;Voice 1: Control Register
+        ;STA $D404    ;Voice 1: Control Register
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -783,9 +883,9 @@ PlayNote3
 ;-------------------------------------------------------------------------
 PlayChord
         LDA #$00
-        STA $D412    ;Voice 3: Control Register
-        STA $D404    ;Voice 1: Control Register
-        STA $D40B    ;Voice 2: Control Register
+        ;STA $D412    ;Voice 3: Control Register
+        ;STA $D404    ;Voice 1: Control Register
+        ;STA $D40B    ;Voice 2: Control Register
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -813,7 +913,7 @@ SetupScreen
 txtBanner   =*-$01
                             .BYTE $23,$24,$22,$25,$26,$27,$20,$19 ; MATRIX
                             .BYTE $1A
-                            .TEXT " 0000000  ", $07, " 5 SHIPS REMAINING  !!!!!"
+                            .BYTE " 0000000  ", $07, " 5 SHIPS REMAINING  !!!!!"
 colorsBannerText            .BYTE $21,$43,$43,$43,$43,$43,$43,$40
                             .BYTE $44,$44,$40,$47,$47,$47,$47,$47
                             .BYTE $47,$47,$40,$40,$45,$40,$43,$40
@@ -827,7 +927,7 @@ gridLineIntroSequenceColors .BYTE $44,$06,$02,$04,$05,$03,$07,$01
 PlayASoundEffect
         JSR PlayChord
         LDA #$0F
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -846,23 +946,26 @@ b8174   DEY
 ; DrawGridLineEntrySequence
 ;-------------------------------------------------------------------------
 DrawGridLineEntrySequence
-        LDA #>SCREEN_RAM + $00A0
+        LDA #>(SCREEN_RAM + $A0)
         STA screenLineHiPtr
-        LDA #<SCREEN_RAM + $00A0
+        LDA #<SCREEN_RAM + $A0
         STA screenLineLoPtr
 b8183   LDA #$00
-        LDY #$26
+        LDY #GRID_WIDTH
 b8187   STA (screenLineLoPtr),Y
         DEY 
         BNE b8187
+
+        ; Draw the color values
         LDA screenLineHiPtr
         PHA 
-        ; Draw the color values
         CLC 
         ADC #OFFSET_TO_COLOR_RAM
         STA screenLineHiPtr
+
         LDX gridStartLoPtr
         LDA gridLineIntroSequenceColors,X
+
         LDY #$26
 b819B   STA (screenLineLoPtr),Y
         DEY 
@@ -888,9 +991,9 @@ b81B7   DEC gridStartHiPtr
 ;---------------------------------------------------------------------------------
 BeginGameEntrySequence   
         LDA #$02
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         LDA #$03
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         JSR PlayNote1
         JSR PlayNote2
 
@@ -899,13 +1002,13 @@ BeginGameEntrySequence
 b81D0   STA charSetLocation - $0001,X
         DEX 
         BNE b81D0
-        LDA #$13
-        STA tempCounter
 
         ; This sequence draws the grid animation when entering a level.
 
         ; In this loop each iteration adds a line to the top of the screen creating
         ; the effect of pulsing colored lines coming down the screen
+        LDA #$13
+        STA tempCounter
         LDA #$01
         STA tempCounter2
 GridAnimLoop
@@ -916,7 +1019,7 @@ GridAnimLoop
         SBC tempCounter
         STA gridStartHiPtr
         LDA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         INC soundModeAndVol
         LDA soundModeAndVol
         CMP #$10
@@ -1008,7 +1111,7 @@ b827C   LDX gridStartHiPtr
         LDA soundModeAndVol
         SBC #$04
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         DEC gridStartLoPtr
         BNE TurnBlueScreenToGridLoop
 
@@ -1022,7 +1125,7 @@ EnterMainGameLoop
 
         LDA #$90
         STA voice1FreqHiVal
-        STA $D401    ;Voice 1: Frequency Control - High-Byte
+        ;STA $D401    ;Voice 1: Frequency Control - High-Byte
         JSR PlayNote3
 
         LDA #$15
@@ -1039,7 +1142,7 @@ ShipMaterializationLoop
         LDA #$0F
         SEC 
         SBC gridStartLoPtr
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         LDA previousShipXPosition
         SEC 
         SBC gridStartLoPtr
@@ -1131,13 +1234,13 @@ b8356   DEY
         BNE b8356
         DEC voice3FreqHiVal
         LDA voice3FreqHiVal
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         CMP #$80
         BNE b8354
         LDA soundModeAndVol
         SBC #$05
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         DEC gridStartLoPtr
         BNE FlashEffectLoop
 
@@ -1183,7 +1286,7 @@ b837C   STA previousLasersHiPtrArray,X
 
         LDA #$0F
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
 
         ; This is the main game loop. This will keep looping until
         ; the game is over..
@@ -1246,7 +1349,7 @@ b841D   LDA previousShipYPosition
         JSR WriteCurrentCharacterToCurrentXYPos
 
         LDA joystickInput
-        AND #$01
+        AND #PAD_U
         BEQ b843C
 
         ; Joystick pushed up.
@@ -1257,7 +1360,7 @@ b841D   LDA previousShipYPosition
         INC currentYPosition
 
 b843C   LDA joystickInput
-        AND #$02
+        AND #PAD_D
         BEQ b844C
 
         ;Joystick pushed down.
@@ -1269,8 +1372,9 @@ b843C   LDA joystickInput
 
 b844C   LDA #$00
         STA shipMovementDirection
+
         LDA joystickInput
-        AND #$04
+        AND #PAD_L
         BEQ b8464
 
         ; Joystick pushed left.
@@ -1283,7 +1387,7 @@ b844C   LDA #$00
         LDA #$00
         STA shipMovementDirection
 b8464   LDA joystickInput
-        AND #$08
+        AND #PAD_R
         BEQ b847C
 
         ; Joystick pushed right.
@@ -1299,7 +1403,7 @@ b8464   LDA joystickInput
 
 b847C   JSR CheckForCollisionWithNewMovememnt
         LDA joystickInput
-        AND #$10
+        AND #PAD_A
         BEQ b84A2
 
         ; Fire pressed.
@@ -1314,7 +1418,7 @@ b847C   JSR CheckForCollisionWithNewMovememnt
         STA bulletType
         LDA #$70
         STA voice1FreqHiVal
-        STA $D401    ;Voice 1: Frequency Control - High-Byte
+        ;STA $D401    ;Voice 1: Frequency Control - High-Byte
         JSR PlayNote3
 
 b84A2   LDA shipMovementDirection
@@ -1444,10 +1548,10 @@ b8535   LDA #$20
         DEC voice1FreqHiVal
         DEC voice1FreqHiVal
         LDA voice1FreqHiVal
-        STA $D401    ;Voice 1: Frequency Control - High-Byte
+        ;STA $D401    ;Voice 1: Frequency Control - High-Byte
         BNE b8551
         LDA #$00
-        STA $D404    ;Voice 1: Control Register
+        ;STA $D404    ;Voice 1: Control Register
 
 b8551   LDA bulletType
         BEQ b8534
@@ -1715,7 +1819,7 @@ b8718   JSR WriteCurrentCharacterToCurrentXYPos
         STA currentLaserInterval
         LDA #<SCREEN_RAM + $00A0
         STA gridStartLoPtr
-        LDA #>SCREEN_RAM + $00A0
+        LDA #>(SCREEN_RAM + $00A0)
         STA gridStartHiPtr
 
         ; Award a bonus bit for surviving a laser.
@@ -1998,16 +2102,16 @@ b88C0   LDA voice2FreqHiVal2
         ASL 
         CLC 
         ADC podDestroyedSoundEffect
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         LDA #$10
         STA voice2FreqHiVal2
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         JSR PlayNote1
         RTS 
 
 b88DD   INC voice2FreqHiVal2
         LDA voice2FreqHiVal2
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         CMP #$16
         BEQ b88EB
 b88EA   RTS 
@@ -2015,10 +2119,10 @@ b88EA   RTS
 b88EB   DEC podDestroyedSoundEffect
         BNE b88EA
         LDA #$0F
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         STA voice2FreqHiVal2
         LDA #$00
-        STA $D40B    ;Voice 2: Control Register
+        ;STA $D40B    ;Voice 2: Control Register
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -2036,7 +2140,7 @@ b8906   LDA voice3FreqHiVal
         BEQ b8917
         DEC voice3FreqHiVal
         LDA voice3FreqHiVal
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         RTS 
 
 b8917   DEC explosionSoundControl
@@ -2047,17 +2151,17 @@ b8917   DEC explosionSoundControl
         RTS 
 
 b8924   LDA #$00
-        STA $D412    ;Voice 3: Control Register
+        ;STA $D412    ;Voice 3: Control Register
 b8929   RTS 
 
 b892A   DEC deflexorSoundControl
         LDA deflexorSoundControl
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         BNE b8929
         LDA #$00
-        STA $D412    ;Voice 3: Control Register
+        ;STA $D412    ;Voice 3: Control Register
         LDA #$0F
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -2177,7 +2281,7 @@ b8A16   LDA droidSquadState,X
 b8A21   INC currentXPosition
         LDA currentXPosition
         BEQ b8A2E
-        CMP #$27
+        CMP #GRID_WIDTH
         BEQ b8A2E
         JMP j8A31
 
@@ -2223,7 +2327,7 @@ j8A6E   INC currentYPosition
         EOR #$01
         STA droidSquadState,X
         LDA currentYPosition
-        CMP #$15
+        CMP #GRID_HEIGHT
         BNE b8A4E
         DEC currentYPosition
         LDA droidSquadState,X
@@ -2314,12 +2418,12 @@ b8B3A   LDA #$00
         STA tempCounter2
         LDA currentXPosition
         BEQ j8B5A
-        CMP #$27
+        CMP #GRID_WIDTH
         BEQ j8B5A
 j8B46   LDA currentYPosition
         CMP #$02
         BEQ b8B6D
-        CMP #$16
+        CMP #GRID_HEIGHT + 1
         BEQ b8B6D
 j8B50   LDA tempCounter2
         BNE b8B57
@@ -3225,7 +3329,7 @@ b91A4   LDA currentYPosition
         LDA #$0F
         STA deflexorSoundControl
         LDA #$90
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         JSR PlayNote2
         LDA #$00
         STA explosionSoundControl
@@ -3496,26 +3600,26 @@ b93FA   LDA charSetLocation - $0001,X
 
 b9411   RTS 
 
-txtEnterZoneXX   .TEXT "ENTER ZONE 00"
+txtEnterZoneXX   .BYTE "ENTER ZONE 00"
 ;---------------------------------------------------------------------------------
 ; PlayInterstitialSoundAndClearGrid   
 ;---------------------------------------------------------------------------------
 PlayInterstitialSoundAndClearGrid   
         LDA #$0F
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         JSR PlayChord
         LDA #$E8
         STA voice1FreqHiVal
         JSR PlayNote1
 b9432   LDA voice1FreqHiVal
-        STA $D401    ;Voice 1: Frequency Control - High-Byte
+        ;STA $D401    ;Voice 1: Frequency Control - High-Byte
         STA voice2FreqHiVal
 b943B   JSR DelayThenAdvanceRollingGridAnimation
         INC voice2FreqHiVal
         LDA voice2FreqHiVal
         SBC #$E0
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         LDA voice2FreqHiVal
         BNE b943B
         INC voice1FreqHiVal
@@ -3653,7 +3757,7 @@ b94E3   JSR WriteCurrentCharacterToCurrentXYPos
         JSR PlayChord
         LDA #$08
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         JSR PlayNote2
 
         ; Draw the ship character explosion. THe screen flashes.
@@ -3666,7 +3770,7 @@ b9505   LDY #$E0
 b9507   DEY 
         BNE b9507
         LDA voice3FreqHiVal
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         INC voice3FreqHiVal
         LDA voice3FreqHiVal
         CMP #$80
@@ -3677,7 +3781,7 @@ b9507   DEY
         CPX #$F0
         BNE b9528
         LDA #$06
-b9528   STA $D021    ;Background Color 0
+b9528   ;STA $D021    ;Background Color 0
         LDA previousShipXPosition
         STA currentXPosition
         LDA previousShipYPosition
@@ -3696,11 +3800,11 @@ b9528   STA $D021    ;Background Color 0
 
         LDA #$0F
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         JSR PlayChord
         LDA #$04
         STA voice1FreqHiVal
-        STA $D401    ;Voice 1: Frequency Control - High-Byte
+        ;STA $D401    ;Voice 1: Frequency Control - High-Byte
         LDX #$08
         JSR PlayNote3
 
@@ -3738,7 +3842,7 @@ b958E   LDA #GRID
         STA colorForCurrentCharacter
         JSR DrawGridOverDissolvedExplosion
         LDA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
 b959F   DEC soundModeAndVol
         BNE b956A
 
@@ -3876,7 +3980,7 @@ b967D   LDA txtGotYou,X
         JSR PlayChord
         LDA #$0F
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         JSR PlayNote2
         LDX #$0A
 b96A0   LDA #$20
@@ -3885,7 +3989,7 @@ b96A5   LDY #$00
 b96A7   DEY 
         BNE b96A7
         LDA voice3FreqHiVal
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         INC voice3FreqHiVal
         LDA voice3FreqHiVal
         CMP #$40
@@ -3899,7 +4003,7 @@ b96C4   LDY #$00
 b96C6   DEY 
         BNE b96C6
         LDA voice3FreqHiVal
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         JSR PlayNote2
         DEC voice3FreqHiVal
         BNE b96C4
@@ -3907,12 +4011,12 @@ b96C6   DEY
         SEC 
         SBC #$02
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         DEX 
         BNE b96BF
         JMP EnterMainGameLoop
 
-txtGotYou   .TEXT "GOT YOUz"
+txtGotYou   .BYTE "GOT YOUz"
 ;---------------------------------------------------------------------------------
 ; DrawZoneClearedInterstitial   
 ;---------------------------------------------------------------------------------
@@ -3968,7 +4072,7 @@ b9714   LDA txtZoneCleared,X
 b9739   DEY 
         BNE b9739
         LDA voice2FreqHiVal2
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         INC voice2FreqHiVal2
         LDA voice2FreqHiVal2
         CMP #$48
@@ -3987,7 +4091,7 @@ b9756   LDA #$60
 b975B   DEY 
         BNE b975B
         LDA voice2FreqHiVal2
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         DEC voice2FreqHiVal2
         LDA voice2FreqHiVal2
         CMP #$30
@@ -3996,14 +4100,14 @@ b975B   DEY
         SEC 
         SBC #$02
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         DEX 
         BNE b9756
         LDA mysteryBonusEarned
         BNE MysteryBonusSequence
         JMP EnterMainGameLoop
 
-txtZoneCleared   .TEXT "ZONE CLEARED"
+txtZoneCleared   .BYTE "ZONE CLEARED"
 
 ;---------------------------------------------------------------------------------
 ; MysteryBonusSequence   
@@ -4011,7 +4115,7 @@ txtZoneCleared   .TEXT "ZONE CLEARED"
 MysteryBonusSequence   
         LDA #$0F
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         JSR PlayChord
 
         LDX #$08
@@ -4081,7 +4185,7 @@ b9810   DEY
         BNE b9810
         LDA voice2FreqHiVal2
         SBC #$80
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         INC voice2FreqHiVal2
         BNE b9810
         JSR WasteAFewCycles
@@ -4101,7 +4205,7 @@ b9810   DEY
 
         JMP EnterMainGameLoop
 
-txtMysteryBonus   .TEXT " MYSTERY BONUS    "
+txtMysteryBonus   .BYTE " MYSTERY BONUS    "
 ;---------------------------------------------------------------------------------
 ; CalculateMysteryBonusAndClearZone   
 ;---------------------------------------------------------------------------------
@@ -4219,11 +4323,11 @@ b988D   LDA #$05
         ;Falls through to TitleScreenLoop
 
 
-txtTitleScreenLine1     .TEXT "DESIGN AND PROGRAMMING"
-txtTitleScreenLine2     .TEXT "   BY  JEFF  MINTER   "
-txtTitleScreenLine3     .TEXT " ?  1983 BY LLAMASOFT "
-txtTitleScreenLine4     .TEXT " PRESS FIRE FOR START "
-txtTitleScreenLine5     .TEXT "SELECT START LEVEL   1"
+txtTitleScreenLine1     .BYTE "DESIGN AND PROGRAMMING"
+txtTitleScreenLine2     .BYTE "   BY  JEFF  MINTER   "
+txtTitleScreenLine3     .BYTE " ?  1983 BY LLAMASOFT "
+txtTitleScreenLine4     .BYTE " PRESS FIRE FOR START "
+txtTitleScreenLine5     .BYTE "SELECT START LEVEL   1"
 
 txtInitialScrollingText .BYTE $96,$95,$94,$93,$92,$91,$90,$8F
                         .BYTE $8E,$8D,$8C,$8B,$8A,$89,$88,$87
@@ -4354,8 +4458,8 @@ b9A1A   LDA charSetLocation + $03C7,X
 TitleScreenCheckJoystickKeyboardInput   
         STX tempCounter2
         JSR GetJoystickInput
-        LDA lastKeyPressed
 
+        LDA lastKeyPressed
         CMP #$04
         BNE b9A40
         INC SCREEN_RAM + $0226
@@ -4368,7 +4472,7 @@ TitleScreenCheckJoystickKeyboardInput
         STA SCREEN_RAM + $0226
 
 b9A40   LDA joystickInput
-        AND #$10
+        AND #PAD_A
         BNE b9A4B
         LDX tempCounter2
         JMP ReenterTitleScrenLoop
@@ -4403,7 +4507,7 @@ b9A67   LDA txtGameOver,X
         BNE b9A67
         LDA #$0F
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
 
         LDX #$0F
 b9A84   LDA #$80
@@ -4417,9 +4521,9 @@ b9A97   DEY
         BNE b9A97
         LDA voice2FreqHiVal2
         SBC #$70
-        STA $D408    ;Voice 2: Frequency Control - High-Byte
+        ;STA $D408    ;Voice 2: Frequency Control - High-Byte
         ADC #$80
-        STA $D40F    ;Voice 3: Frequency Control - High-Byte
+        ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         INC voice2FreqHiVal
         INC voice2FreqHiVal2
         INC voice3FreqHiVal
@@ -4428,7 +4532,7 @@ b9A97   DEY
         SEC 
         SBC #$01
         STA soundModeAndVol
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         DEX 
         BNE b9A84
 
@@ -4455,7 +4559,7 @@ b9AE2   LDA SCREEN_RAM + $0009,X
         BNE b9AE2
         JMP b9AD4
 
-txtGameOver   .TEXT "GAME OVER"
+txtGameOver   .BYTE "GAME OVER"
 ;---------------------------------------------------------------------------------
 ; DrawHiScore   
 ;---------------------------------------------------------------------------------
@@ -4513,7 +4617,7 @@ b9B4C   STA SCREEN_RAM + $0009,X
 
 b9B52   RTS 
 
-txtHiScore                  .TEXT "HISCORE"
+txtHiScore                  .BYTE "HISCORE"
 
 
 ; This is a list of offsets into alphabetCharsetStorage. When scrolling
@@ -4541,26 +4645,8 @@ txtScrollingAllMatrixPilots .BYTE $01,$0C,$0C,$20,$0D,$01,$14,$12
 PlayASoundEffect2
         STA voice3FreqHiVal
         LDA #$0F
-        STA $D418    ;Select Filter Mode and Volume
+        ;STA $D418    ;Select Filter Mode and Volume
         RTS 
 
-;---------------------------------------------------------------------------------
-; CopyCharsetIntoPosition   
-;---------------------------------------------------------------------------------
-CopyCharsetIntoPosition   
-        LDX #$00
-b9BB5   LDA f9C00,X
-        STA charSetLocation,X
-        LDA f9D00,X
-        STA charSetLocation + $0100,X
-        LDA f9E00,X
-        STA alphabetCharsetStorage,X
-        LDA f9F00,X
-        STA charSetLocation + $0300,X
-        INX 
-        BNE b9BB5
-        JMP InitializeGame
 
-				.FILL 45, $EA
 
-.include "charset.asm"
