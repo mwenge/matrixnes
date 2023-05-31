@@ -104,7 +104,7 @@ releasedButtons               .res 1
 ;
 ; **** POINTERS **** 
 ;
-OFFSET_TO_COLOR_RAM                          = $20
+OFFSET_TO_COLOR_RAM                          = $30
 
 BLACK                                        = $00
 WHITE                                        = $01
@@ -233,8 +233,8 @@ scrollingTextStorage                         .res $200
 PPU_SCREEN_RAM     = $2000
 ; SCREEN_RAM is our address to screenBuffer
 SCREEN_RAM         = $6020
-COLOR_RAM          = $8020
-GRID_HEIGHT        = 21 
+COLOR_RAM          = $9020
+GRID_HEIGHT        = 28 
 GRID_WIDTH         = 31 
 GRID_TOP           = 2
 GRID_LEFT          = 2
@@ -595,7 +595,7 @@ WriteCurrentCharacterToCurrentXYPos
         JSR GetLinePtrForCurrentYPosition
         JSR AddPixelToNMTUpdate
         ; If we've got a few to write, let them do that now.
-        CPX #37
+        CPX #27
         BMI @UpdateComplete
         JSR PPU_Update
 
@@ -910,6 +910,7 @@ SetupScreen
         JSR DrawTitleScreen
         JMP BeginGameEntrySequence
 
+.SEGMENT  "RODATA"
 txtBanner   =*-$01
                             .BYTE $23,$24,$22,$25,$26,$27,$20,$19 ; MATRIX
                             .BYTE $1A
@@ -921,6 +922,8 @@ colorsBannerText            .BYTE $21,$43,$43,$43,$43,$43,$43,$40
                             .BYTE $47,$47,$47,$47,$47,$47,$47,$47
                             .BYTE $47,$44,$44,$44,$44,$44
 gridLineIntroSequenceColors .BYTE $44,$06,$02,$04,$05,$03,$07,$01
+
+.SEGMENT  "CODE"
 ;-------------------------------------------------------------------------
 ; PlayASoundEffect
 ;-------------------------------------------------------------------------
@@ -966,7 +969,7 @@ b8187   STA (screenLineLoPtr),Y
         LDX gridStartLoPtr
         LDA gridLineIntroSequenceColors,X
 
-        LDY #$26
+        LDY #GRID_WIDTH - 1
 b819B   STA (screenLineLoPtr),Y
         DEY 
         BNE b819B
@@ -1300,6 +1303,7 @@ MainGameLoop
         JSR CheckForCheatKeySequence
         JMP MainGameLoop
 
+.SEGMENT  "RODATA"
 droidDecaySequence   =*-$01
                         .BYTE BOTTOM_ZAPPER, POD1, POD2, POD3, POD4, POD5, POD6, BOMB
 
@@ -1308,6 +1312,7 @@ thingsThatKillAShip     .BYTE BULLET_DOWN, HORIZ_LASER1, HORIZ_LASER2
                         .BYTE DROID1, DROID2, DROID3
 
                         
+.SEGMENT  "CODE"
                         
 ;-------------------------------------------------------------------------
 ; ProcessJoystickInput
@@ -1395,7 +1400,7 @@ b8464   LDA joystickInput
         STA shipMovementDirection
         INC currentXPosition
         LDA currentXPosition
-        CMP #$27
+        CMP #GRID_WIDTH
         BNE b847C
         DEC currentXPosition
         LDA #$00
@@ -1678,7 +1683,7 @@ b8616   LDA #SPACE
         JSR WriteCurrentCharacterToCurrentXYPos
         INC bottomZapperXPos
         LDA bottomZapperXPos
-        CMP #$27
+        CMP #GRID_WIDTH
         BNE b8646
         LDA #$01
         STA bottomZapperXPos
@@ -1895,10 +1900,13 @@ b879E   DEX
         BNE b8796
         RTS 
 
+.SEGMENT  "RODATA"
 shipValues =*-$01
         .BYTE SHIP, SHIP_LEFT, SHIP_RIGHT, SHIP_RIGHT
 bottomZapperValues =*-$01
         .BYTE SPACE, BOTTOM_ZAPPER, BOTTOM_ZAPPER_LEFT, BOTTOM_ZAPPER_RIGHT
+
+.SEGMENT  "CODE"
 ;-------------------------------------------------------------------------
 ; DrawLaser
 ;-------------------------------------------------------------------------
@@ -1922,7 +1930,7 @@ DrawLaser
         STA gridStartHiPtr
         LDA gridStartLoPtr
         CLC 
-        ADC #$28
+        ADC #GRID_WIDTH + 1
         STA gridStartLoPtr
         LDA gridStartHiPtr
         ADC #$00
@@ -3117,7 +3125,7 @@ b902F   LDA #GRID
         JSR WriteCurrentCharacterToCurrentXYPos
         INC currentXPosition
         LDA currentXPosition
-        CMP #$27
+        CMP #GRID_WIDTH
         BNE b904F
         LDA #$00
         STA bulletType
@@ -3246,6 +3254,7 @@ b910F   CLC
         BNE b90F7
         RTS 
 
+.SEGMENT  "RODATA"
 rightDeflexorValues   =*-$01
 				.BYTE DEFLEX1,EXPLOSION1,EXPLOSION2
 leftDeflexorValues  =*-$01
@@ -3254,6 +3263,8 @@ dotAndComma  =*-$01
 				.BYTE BIG_DOT,COMMA,EXCLAMATION
 shipCharacters =*-$01  
         .BYTE SHIP,SHIP_LEFT,SHIP_RIGHT
+
+.SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
 ; CheckBulletCollisionWithOtherElements   
 ;---------------------------------------------------------------------------------
@@ -3369,6 +3380,7 @@ b91E2   LDA deflexorXPosArrays,X
         BNE b91E2
         RTS 
 
+.SEGMENT  "RODATA"
 deflexorXPosArrays = *-$01
         .BYTE $13,$14,$13,$14,$01,$04,$07,$0A
         .BYTE $26,$23,$20,$1D,$13,$14,$07,$20
@@ -3426,6 +3438,7 @@ configurationForLevel = *-$01
         .BYTE $01,$01,$00,$01,$82,$00,$01,$82
         .BYTE $82,$00,$01,$82,$82
 
+.SEGMENT  "CODE"
 ;-------------------------------------------------------------------------
 ; LoadSettingsForLevel
 ;-------------------------------------------------------------------------
@@ -3482,7 +3495,7 @@ b9347   LDA #$00
 b934B   JSR WriteCurrentCharacterToCurrentXYPos
         INC currentXPosition
         LDA currentXPosition
-        CMP #$28
+        CMP #GRID_WIDTH + 1
         BNE b934B
         INC currentYPosition
         LDA currentYPosition
@@ -3501,7 +3514,7 @@ b936A   LDA #$01
 b936E   JSR WriteCurrentCharacterToCurrentXYPos
         INC currentXPosition
         LDA currentXPosition
-        CMP #$27
+        CMP #GRID_WIDTH
         BNE b936E
         INC currentYPosition
         LDA currentYPosition
@@ -3600,7 +3613,10 @@ b93FA   LDA charSetLocation - $0001,X
 
 b9411   RTS 
 
+.SEGMENT  "RODATA"
 txtEnterZoneXX   .BYTE "ENTER ZONE 00"
+
+.SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
 ; PlayInterstitialSoundAndClearGrid   
 ;---------------------------------------------------------------------------------
@@ -3628,6 +3644,7 @@ b943B   JSR DelayThenAdvanceRollingGridAnimation
         JMP DrawEmptyGrid
         ; Returns
 
+.SEGMENT  "RODATA"
 ;---------------------------------------------------------------------------------
 ; Patterns used for SetGridPattern
 ;---------------------------------------------------------------------------------
@@ -3654,6 +3671,7 @@ blockyGridPattern=*-$01
                                                 ; 00000000           
                                                 ; 00000000           
 
+.SEGMENT  "CODE"
 ;-------------------------------------------------------------------------
 ; SetGridPattern
 ;-------------------------------------------------------------------------
@@ -3751,7 +3769,7 @@ CollisionWithShip
 b94E3   JSR WriteCurrentCharacterToCurrentXYPos
         INC currentXPosition
         LDA currentXPosition
-        CMP #$27
+        CMP #GRID_WIDTH
         BNE b94E3
 
         JSR PlayChord
@@ -3910,7 +3928,7 @@ b9605   RTS
 
 b9606   LDA currentXPosition
         BEQ b9605
-        CMP #$27
+        CMP #GRID_WIDTH
         BPL b9605
         LDA currentYPosition
         AND #$80
@@ -3923,8 +3941,11 @@ b9606   LDA currentXPosition
         BEQ b9605
         JMP WriteCurrentCharacterToCurrentXYPos
 
+.SEGMENT  "RODATA"
 shipExplosionAnimation .BYTE EXPLOSION1,EXPLOSION2,EXPLOSTION3,$40
 colorsForEffects       .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
+
+.SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
 ; DecrementLives   
 ;---------------------------------------------------------------------------------
@@ -4016,7 +4037,10 @@ b96C6   DEY
         BNE b96BF
         JMP EnterMainGameLoop
 
+.SEGMENT  "RODATA"
 txtGotYou   .BYTE "GOT YOUz"
+
+.SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
 ; DrawZoneClearedInterstitial   
 ;---------------------------------------------------------------------------------
@@ -4107,8 +4131,10 @@ b975B   DEY
         BNE MysteryBonusSequence
         JMP EnterMainGameLoop
 
+.SEGMENT  "RODATA"
 txtZoneCleared   .BYTE "ZONE CLEARED"
 
+.SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
 ; MysteryBonusSequence   
 ;---------------------------------------------------------------------------------
@@ -4205,7 +4231,9 @@ b9810   DEY
 
         JMP EnterMainGameLoop
 
+.SEGMENT  "RODATA"
 txtMysteryBonus   .BYTE " MYSTERY BONUS    "
+.SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
 ; CalculateMysteryBonusAndClearZone   
 ;---------------------------------------------------------------------------------
@@ -4323,6 +4351,7 @@ b988D   LDA #$05
         ;Falls through to TitleScreenLoop
 
 
+.SEGMENT  "RODATA"
 txtTitleScreenLine1     .BYTE "DESIGN AND PROGRAMMING"
 txtTitleScreenLine2     .BYTE "   BY  JEFF  MINTER   "
 txtTitleScreenLine3     .BYTE " ?  1983 BY LLAMASOFT "
@@ -4332,6 +4361,7 @@ txtTitleScreenLine5     .BYTE "SELECT START LEVEL   1"
 txtInitialScrollingText .BYTE $96,$95,$94,$93,$92,$91,$90,$8F
                         .BYTE $8E,$8D,$8C,$8B,$8A,$89,$88,$87
                         .BYTE $86,$85,$84,$83,$82,$81
+.SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
 ; TitleScreenLoop   
 ;---------------------------------------------------------------------------------
@@ -4462,14 +4492,14 @@ TitleScreenCheckJoystickKeyboardInput
         LDA lastKeyPressed
         CMP #$04
         BNE b9A40
-        INC SCREEN_RAM + $0226
-        LDA SCREEN_RAM + $0226
+        INC SCREEN_RAM + $019E
+        LDA SCREEN_RAM + $019E
 
         CMP #$37
         BNE b9A40
 
         LDA #$31
-        STA SCREEN_RAM + $0226
+        STA SCREEN_RAM + $019E
 
 b9A40   LDA joystickInput
         AND #PAD_A
@@ -4477,7 +4507,7 @@ b9A40   LDA joystickInput
         LDX tempCounter2
         JMP ReenterTitleScrenLoop
 
-b9A4B   LDA SCREEN_RAM + $0226
+b9A4B   LDA SCREEN_RAM + $019E
         SEC 
         SBC #$30
         STA currentLevel
@@ -4617,6 +4647,7 @@ b9B4C   STA SCREEN_RAM + $0009,X
 
 b9B52   RTS 
 
+.SEGMENT  "RODATA"
 txtHiScore                  .BYTE "HISCORE"
 
 
@@ -4639,6 +4670,7 @@ txtScrollingAllMatrixPilots .BYTE $01,$0C,$0C,$20,$0D,$01,$14,$12
                             .BYTE $02,$01,$14,$20,$04,$15,$14,$19
                             .BYTE $2E,$2E,$2E,$2E,$2E,$20,$20,$20
                             .BYTE $20,$20,$20,$20,$20,$20,$20,$00
+.SEGMENT  "CODE"
 ;-------------------------------------------------------------------------
 ; PlayASoundEffect2
 ;-------------------------------------------------------------------------
