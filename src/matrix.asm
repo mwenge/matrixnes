@@ -105,6 +105,7 @@ releasedButtons               .res 1
 ; **** POINTERS **** 
 ;
 OFFSET_TO_COLOR_RAM                          = $30
+SCREEN_RAM_HIPTR_MAX = $64
 
 BLACK                                        = $00
 WHITE                                        = $01
@@ -208,8 +209,16 @@ screenBufferHiPtrArray
         .BYTE $00,$00,$00,$00,$00,$00,$00,$00
         .BYTE $00,$00,$00,$00,$00,$00
 
-previousLasersLoPtrsArray                    .res 32
-previousLasersHiPtrArray                     .res 32
+previousLasersLoPtrsArray
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+previousLasersHiPtrArray
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
 previousHiScore                              .res 8
 wrongCharSetLocation                         .res 1
 droidSquadsXPosArray                         .res $80
@@ -234,8 +243,13 @@ PPU_SCREEN_RAM     = $2000
 ; SCREEN_RAM is our address to screenBuffer
 SCREEN_RAM         = $6020
 COLOR_RAM          = $9020
-GRID_HEIGHT        = 28 
+
+GRID_HEIGHT        = 21 
 GRID_WIDTH         = 31 
+
+SCREEN_WIDTH = 32
+SCREEN_HEIGHT = 30
+
 GRID_TOP           = 2
 GRID_LEFT          = 2
 START_X_POS        = 15
@@ -806,10 +820,10 @@ ClearScreenBuffer
             LDA #$20
             STA (screenBufferLoPtr),Y
             INY
-            CPY #32
+            CPY #SCREEN_WIDTH
             BNE :-
           INX
-          CPX #GRID_HEIGHT + 2
+          CPX #SCREEN_HEIGHT - 1
           BNE :--
 
         RTS 
@@ -1371,7 +1385,7 @@ b843C   LDA joystickInput
         ;Joystick pushed down.
         INC currentYPosition
         LDA currentYPosition
-        CMP #$16
+        CMP #GRID_HEIGHT + 1
         BNE b844C
         DEC currentYPosition
 
@@ -1652,7 +1666,7 @@ b85CD   DEC zapperFrameCounter
         INC currentCharacter
         INC currentYPosition
         JSR WriteCurrentCharacterToCurrentXYPos
-        LDA #$16
+        LDA #GRID_HEIGHT + 1
         STA currentYPosition
         LDA #BOTTOM_ZAPPER_LEFT
         STA currentCharacter
@@ -1674,7 +1688,7 @@ b8616   LDA #SPACE
         JSR WriteCurrentCharacterToCurrentXYPos
         INC currentYPosition
         JSR WriteCurrentCharacterToCurrentXYPos
-        LDA #$16
+        LDA #GRID_HEIGHT + 1
         STA currentYPosition
         LDA bottomZapperXPos
         STA currentXPosition
@@ -1689,7 +1703,7 @@ b8616   LDA #SPACE
         STA bottomZapperXPos
 b8646   INC leftZapperYPos
         LDA leftZapperYPos
-        CMP #$16
+        CMP #GRID_HEIGHT + 1
         BNE b8652
         LDA #$03
         STA leftZapperYPos
@@ -1840,7 +1854,7 @@ b874D   INC gridStartLoPtr
         BNE b8746
         INC gridStartHiPtr
         LDA gridStartHiPtr
-        CMP #$08
+        CMP #SCREEN_RAM_HIPTR_MAX
         BNE b8746
         RTS 
 
@@ -1945,6 +1959,7 @@ b87E3   CMP bottomZapperValues,X
         BEQ b8807
         DEX 
         BNE b87DB
+
         LDA #$0A
         STA (gridStartLoPtr),Y
         LDA gridStartHiPtr
@@ -2187,14 +2202,14 @@ b8947   LDA #$C0
         JSR AnimateSnitch
         LDA noOfDroidSquadsLeftInCurrentLevel
         BNE b8955
-        JMP j89CC
+        JMP GoToNextDroid
 
 b8955   LDA counterBetweenDroidSquads
         BEQ b8946
         CMP #$01
         BEQ b8962
         DEC counterBetweenDroidSquads
-        JMP j89CC
+        JMP GoToNextDroid
 
 b8962   LDA currentNoOfDronesLeftInCurrentDroidSquad
         CMP originalNoOfDronesInDroidSquadInCurrentLevel
@@ -2235,7 +2250,7 @@ b89A3   INC currentDroidsLeft
         STA droidSquadState,X
         DEC currentNoOfDronesLeftInCurrentDroidSquad
         BEQ b89BD
-        JMP j89CC
+        JMP GoToNextDroid
 
 b89BD   LDA #$40
         STA droidSquadState,X
@@ -2245,7 +2260,8 @@ b89BD   LDA #$40
         STA currentNoOfDronesLeftInCurrentDroidSquad
         DEC noOfDroidSquadsLeftInCurrentLevel
 
-j89CC   INC currentDroidChar
+GoToNextDroid   
+        INC currentDroidChar
         LDA currentDroidChar
         CMP #DROID3
         BNE b89D8
@@ -2759,7 +2775,7 @@ b8D8B   INC currentXPosition
         INC cameloidsCurrentYPosArray,X
         INC currentYPosition
         LDA currentYPosition
-        CMP #$16
+        CMP #GRID_HEIGHT + 1
         BNE b8DD6
         LDA currentDroidsLeft
         BNE b8DD0
@@ -3195,7 +3211,7 @@ b90BD   LDA #GRID
         JSR WriteCurrentCharacterToCurrentXYPos
         INC currentYPosition
         LDA currentYPosition
-        CMP #$16
+        CMP #GRID_HEIGHT + 1
         BNE b90D5
         LDA #$00
         STA bulletType
@@ -3518,7 +3534,7 @@ b936E   JSR WriteCurrentCharacterToCurrentXYPos
         BNE b936E
         INC currentYPosition
         LDA currentYPosition
-        CMP #$16
+        CMP #GRID_HEIGHT + 1
         BNE b936A
         RTS 
 
@@ -3934,7 +3950,7 @@ b9606   LDA currentXPosition
         AND #$80
         BNE b9605
         LDA currentYPosition
-        CMP #$16
+        CMP #GRID_HEIGHT + 1
         BPL b9605
         LDA currentYPosition
         AND #$FC
@@ -4057,12 +4073,12 @@ DrawZoneClearedInterstitial
         STA linesToDrawCounter
 
 ZoneClearedEffectLoop
-        LDA #>SCREEN_RAM + $000E
+        LDA #$04
         STA currentYPosition
 
         ; Choose a new color and prepare to paint another round of 
         ; text at a new Y position.
-b9704   LDA #<SCREEN_RAM + $000E
+b9704   LDA #$0E
         STA currentXPosition
         LDA linesToDrawCounter
         AND #$07
@@ -4344,7 +4360,7 @@ b988D   LDA #$05
         STA colorForCurrentCharacter
         INC currentXPosition
         INX 
-        CPX #$16
+        CPX #GRID_HEIGHT + 1
         BNE b988D
 
         JMP DrawHiScore
@@ -4522,9 +4538,9 @@ DisplayGameOver
         LDA #YELLOW
         STA colorForCurrentCharacter
         LDX #$00
-        LDA #>$0A10
+        LDA #$0A
         STA currentYPosition
-        LDA #<$0A10
+        LDA #$10
         STA currentXPosition
 b9A67   LDA txtGameOver,X
         STA currentCharacter
