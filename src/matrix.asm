@@ -576,6 +576,41 @@ GetLinePtrForCurrentYPosition
         RTS 
 
 ;-------------------------------------------------------------------------
+; WriteScreenBufferLine
+;-------------------------------------------------------------------------
+WriteScreenBufferLine
+        LDA #0
+        STA tempCounter
+        LDY #0
+@Loop
+
+        ; Write to the actual screen (the PPU).
+        LDX NMT_UPDATE_LEN
+
+        LDA screenBufferHiPtr
+        STA NMT_UPDATE, X
+        INX
+
+        LDA screenBufferLoPtr
+        ADC tempCounter
+        STA NMT_UPDATE, X
+        INX
+
+        LDA (screenBufferLoPtr), Y
+        STA NMT_UPDATE, X
+        INX
+
+        STX NMT_UPDATE_LEN
+
+        INC tempCounter
+        INY
+        CPY #SCREEN_WIDTH - 1
+        BNE @Loop
+        
+        JSR PPU_Update
+        RTS
+
+;-------------------------------------------------------------------------
 ; WriteCurrentCharacterToCurrentXYPosToNMTOnly
 ;-------------------------------------------------------------------------
 WriteCurrentCharacterToCurrentXYPosToNMTOnly
@@ -964,35 +999,35 @@ b8174   DEY
 ;-------------------------------------------------------------------------
 DrawGridLineEntrySequence
         LDA #>(SCREEN_RAM + $A0)
-        STA screenLineHiPtr
+        STA screenBufferHiPtr
         LDA #<SCREEN_RAM + $A0
-        STA screenLineLoPtr
+        STA screenBufferLoPtr
 b8183   LDA #$00
         LDY #GRID_WIDTH
-b8187   STA (screenLineLoPtr),Y
+b8187   STA (screenBufferLoPtr),Y
         DEY 
         BNE b8187
 
         ; Draw the color values
-        LDA screenLineHiPtr
+        LDA screenBufferHiPtr
         PHA 
         CLC 
         ADC #OFFSET_TO_COLOR_RAM
-        STA screenLineHiPtr
+        STA screenBufferHiPtr
 
         LDX gridStartLoPtr
         LDA gridLineIntroSequenceColors,X
 
         LDY #GRID_WIDTH - 1
-b819B   STA (screenLineLoPtr),Y
+b819B   STA (screenBufferLoPtr),Y
         DEY 
         BNE b819B
-        LDA screenLineLoPtr
+        LDA screenBufferLoPtr
         ADC #GRID_WIDTH
-        STA screenLineLoPtr
+        STA screenBufferLoPtr
         PLA 
         ADC #$00
-        STA screenLineHiPtr
+        STA screenBufferHiPtr
         INC gridStartLoPtr
         LDA gridStartLoPtr
         CMP #$08
@@ -1145,7 +1180,7 @@ EnterMainGameLoop
         ;STA $D401    ;Voice 1: Frequency Control - High-Byte
         JSR PlayNote3
 
-        LDA #$15
+        LDA #GRID_HEIGHT
         STA previousShipYPosition
         LDA #$14
         STA previousShipXPosition
@@ -1650,7 +1685,7 @@ b85CD   DEC zapperFrameCounter
         LDA #$02
         STA zapperFrameCounter
         JSR PerformRollingGridAnimation
-        JSR DrawLasers
+        JSR DrawFallingBombs
         LDA zapperSwitch
         BNE b8616
 
@@ -1787,7 +1822,7 @@ DrawLaserFromZappers
         STA currentCharacter
         JSR WriteCurrentCharacterToCurrentXYPos
 
-b86DF   LDA #$15
+b86DF   LDA #GRID_HEIGHT
         STA currentYPosition
         LDA oldBottomZapperXPos
         STA currentXPosition
@@ -1812,7 +1847,7 @@ b86F0   JSR WriteCurrentCharacterToCurrentXYPos
         RTS 
 
         ; Draw the laser line across the grid.
-b8708   LDA #$15
+b8708   LDA #GRID_HEIGHT
         STA currentYPosition
         LDA #GRID_BLUE
         STA colorForCurrentCharacter
@@ -1892,7 +1927,7 @@ b877C   LDA previousLasersHiPtrArray,X
         DEX 
         BNE b877C
 
-        LDA #$0D
+        LDA #POD1
         STA (gridStartLoPtr),Y
         RTS 
 
@@ -1903,13 +1938,13 @@ b8789   LDA gridStartLoPtr
         RTS 
 
 ;-------------------------------------------------------------------------
-; DrawLasers
+; DrawFallingBombs
 ;-------------------------------------------------------------------------
-DrawLasers
+DrawFallingBombs
         LDX #$20
 b8796   LDA previousLasersHiPtrArray,X
         BEQ b879E
-        JSR DrawLaser
+        JSR DrawFallingBomb
 b879E   DEX 
         BNE b8796
         RTS 
@@ -1922,9 +1957,9 @@ bottomZapperValues =*-$01
 
 .SEGMENT  "CODE"
 ;-------------------------------------------------------------------------
-; DrawLaser
+; DrawFallingBomb
 ;-------------------------------------------------------------------------
-DrawLaser
+DrawFallingBomb
         STX tempCounter
         LDA previousLasersLoPtrsArray,X
         STA gridStartLoPtr
@@ -1950,6 +1985,7 @@ DrawLaser
         ADC #$00
         STA gridStartHiPtr
         LDA (gridStartLoPtr),Y
+
         LDX #$04
 b87DB   CMP shipValues,X
         BNE b87E3
@@ -1960,7 +1996,7 @@ b87E3   CMP bottomZapperValues,X
         DEX 
         BNE b87DB
 
-        LDA #$0A
+        LDA #BOMB
         STA (gridStartLoPtr),Y
         LDA gridStartHiPtr
         PHA 
@@ -2474,7 +2510,7 @@ b8B6D   LDA droidSquadState,X
         JMP j8B50
 
 ;---------------------------------------------------------------------------------
-; CheckBulletCollisionWithDroidSquad   
+; GRID_HEIGHTCollisionWithDroidSquad   
 ;---------------------------------------------------------------------------------
 CheckBulletCollisionWithDroidSquad   
         CMP #$13
@@ -3547,20 +3583,20 @@ DrawEnterZoneInterstitial
         STA currentYPosition
         LDA #SPACE
         STA currentCharacter
-b938D   LDA #$0D
+b938D   LDA #$07
         STA currentXPosition
 b9391   JSR WriteCurrentCharacterToCurrentXYPos
         INC currentXPosition
         LDA currentXPosition
-        CMP #$1C
+        CMP #$16
         BNE b9391
         INC currentYPosition
         LDA currentYPosition
         CMP #$0E
         BNE b938D
-        LDA #<$0C0E
+        LDA #$08
         STA currentXPosition
-        LDA #>$0C0E
+        LDA #$0C
         STA currentYPosition
         JSR GetLinePtrForCurrentYPosition
 
@@ -3583,22 +3619,24 @@ b93B5   LDA txtEnterZoneXX,X
         INY 
 
         LDX currentLevel
-b93D2   LDA (screenLineLoPtr),Y
+b93D2   LDA (screenBufferLoPtr),Y
         CLC 
         ADC #$01
-        STA (screenLineLoPtr),Y
+        STA (screenBufferLoPtr),Y
         CMP #$3A
         BNE b93EA
         LDA #$30
-        STA (screenLineLoPtr),Y
+        STA (screenBufferLoPtr),Y
         DEY 
-        LDA (screenLineLoPtr),Y
+        LDA (screenBufferLoPtr),Y
         CLC 
         ADC #$01
-        STA (screenLineLoPtr),Y
+        STA (screenBufferLoPtr),Y
         INY 
 b93EA   DEX 
         BNE b93D2
+
+        JSR WriteScreenBufferLine
         JMP PlayInterstitialSoundAndClearGrid
 
 ;-------------------------------------------------------------------------
@@ -3998,9 +4036,9 @@ b9656   STA scrollingTextStorage,X
 ;---------------------------------------------------------------------------------
 RestartLevel   
         JSR ClearGameScreen
-        LDA #>$0A10
+        LDA #$0A
         STA currentYPosition
-        LDA #<$0A10
+        LDA #$10
         STA currentXPosition
         LDA #CYAN
         STA colorForCurrentCharacter
@@ -4301,7 +4339,7 @@ DrawTitleScreen
         JSR ClearGameScreen
         LDA #CYAN
         STA colorForCurrentCharacter
-        LDA #$09
+        LDA #$04
         STA currentXPosition
         LDX #$00
 b988D   LDA #$05
@@ -4505,17 +4543,18 @@ TitleScreenCheckJoystickKeyboardInput
         STX tempCounter2
         JSR GetJoystickInput
 
-        LDA lastKeyPressed
-        CMP #$04
-        BNE b9A40
-        INC SCREEN_RAM + $019E
-        LDA SCREEN_RAM + $019E
+        LDA joystickInput
+        AND #PAD_U
+        BEQ b9A40
+
+        INC SCREEN_RAM + $0199
+        LDA SCREEN_RAM + $0199
 
         CMP #$37
         BNE b9A40
 
         LDA #$31
-        STA SCREEN_RAM + $019E
+        STA SCREEN_RAM + $0199
 
 b9A40   LDA joystickInput
         AND #PAD_A
@@ -4523,7 +4562,7 @@ b9A40   LDA joystickInput
         LDX tempCounter2
         JMP ReenterTitleScrenLoop
 
-b9A4B   LDA SCREEN_RAM + $019E
+b9A4B   LDA SCREEN_RAM + $0199
         SEC 
         SBC #$30
         STA currentLevel
@@ -4619,7 +4658,7 @@ b9AFD   LDA txtHiScore,X
         STA colorForCurrentCharacter
         TXA 
         CLC 
-        ADC #$0C
+        ADC #$07
         STA currentXPosition
         STX gridStartHiPtr
         JSR WriteCurrentCharacterToCurrentXYPos
@@ -4637,6 +4676,8 @@ b9AFD   LDA txtHiScore,X
         INX 
         CPX #$07
         BNE b9AFD
+        JSR PPU_Update
+
         JMP TitleScreenLoop
 
 ;-------------------------------------------------------------------------
