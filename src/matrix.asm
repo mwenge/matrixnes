@@ -2254,8 +2254,8 @@ b8962   LDA currentNoOfDronesLeftInCurrentDroidSquad
         LDX currentDroidsLeft
         LDA #$03
         STA droidSquadsYPosArray,X
-        LDA $D012    ;Raster Position
-        AND #$01
+        ;LDA $D012    ;Raster Position
+        ;AND #$01
         BEQ b8985
         LDA #$1A
         STA droidSquadsXPosArray,X
@@ -2419,7 +2419,7 @@ b8AB2   LDA droidSquadsXPosArray - $01,X
         STX gridStartHiPtr
         JSR GetCharacterAtCurrentXYPos
         LDX gridStartHiPtr
-        CMP #$07
+        CMP #SHIP
         BNE b8AD0
         JMP JumpToCollisionWithShip
 
@@ -2462,11 +2462,11 @@ b8B1B   INC currentYPosition
         STX gridStartHiPtr
         JSR GetCharacterAtCurrentXYPos
         LDX gridStartHiPtr
-        CMP #$07
+        CMP #SHIP
         BEQ b8B37
-        CMP #$0B
+        CMP #SHIP_LEFT
         BEQ b8B37
-        CMP #$0C
+        CMP #SHIP_RIGHT
         BNE b8B3A
         CMP #$00
         BEQ b8B3A
@@ -2510,14 +2510,14 @@ b8B6D   LDA droidSquadState,X
         JMP j8B50
 
 ;---------------------------------------------------------------------------------
-; GRID_HEIGHTCollisionWithDroidSquad   
+; CheckBulletCollisionWithDroidSquad   
 ;---------------------------------------------------------------------------------
 CheckBulletCollisionWithDroidSquad   
-        CMP #$13
+        CMP #DROID1
         BEQ b8B90
-        CMP #$14
+        CMP #DROID2
         BEQ b8B90
-        CMP #$15
+        CMP #DROID3
         BEQ b8B90
         JMP CheckBulletCollisionWithCamelDroids
 
@@ -2649,7 +2649,7 @@ b8C79   RTS
 b8C7A   DEC mainCounterBetweenLasers
         BEQ b8C94
         LDA currentLevel
-        CMP $04 ; FIXME: Is this a bug? Should it be #$04 so that it's looking at which level we're at??
+        CMP #$04 ; FIXME: Is this a bug? Should it be #$04 so that it's looking at which level we're at??
         BMI b8C79
         LDA droidSquadsXPosArray,X
         CMP previousShipXPosition
