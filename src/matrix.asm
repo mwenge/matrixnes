@@ -1827,10 +1827,7 @@ b86DF   LDA #GRID_HEIGHT
         LDA oldBottomZapperXPos
         STA currentXPosition
 
-        LDA laserChar
-        AND #$01
-        CLC 
-        ADC #$05
+        LDA #VERTICAL_LASER1
         STA currentCharacter
 b86F0   JSR WriteCurrentCharacterToCurrentXYPos
         DEC currentYPosition
@@ -1968,6 +1965,7 @@ DrawFallingBomb
         LDY #$00
         TYA 
         STA (gridStartLoPtr),Y
+
         LDA gridStartHiPtr
         PHA 
         CLC 
