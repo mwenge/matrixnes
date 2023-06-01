@@ -2669,6 +2669,7 @@ b8C94   LDA initialMainCounterBetweenLasers
         CMP #$04
         BMI b8C8F
         STX tempXStorage
+
         LDX #$20
 b8CA8   LDA previousLasersHiPtrArray,X
         BEQ b8CB1
@@ -2686,13 +2687,13 @@ b8CB1   STX tempCounter
         JSR GetLinePtrForCurrentYPosition
         TYA 
         CLC 
-        ADC screenLineLoPtr
-        STA screenLineLoPtr
-        LDA screenLineHiPtr
+        ADC screenBufferLoPtr
+        STA screenBufferLoPtr
+        LDA screenBufferHiPtr
         ADC #$00
         LDX tempCounter
         STA previousLasersHiPtrArray,X
-        LDA screenLineLoPtr
+        LDA screenBufferLoPtr
         STA previousLasersLoPtrsArray,X
         LDX tempXStorage
         RTS 
