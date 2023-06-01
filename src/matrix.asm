@@ -99,6 +99,8 @@ buttons                       .res 1
 pressedButtons                .res 1
 releasedButtons               .res 1
 
+tempX .res 1
+tempY .res 1
 
 .segment "CODE"
 ;
@@ -578,9 +580,43 @@ GetLinePtrForCurrentYPosition
 ;-------------------------------------------------------------------------
 ; WriteScreenBufferLine
 ;-------------------------------------------------------------------------
+WriteGridStartCharacter
+        STX tempX
+        STY tempY
+
+        ; Write to the actual screen (the PPU).
+        LDX NMT_UPDATE_LEN
+
+        LDA gridStartHiPtr
+        STA NMT_UPDATE, X
+        INX
+
+        LDA gridStartLoPtr
+        CLC
+        ADC tempY
+        STA NMT_UPDATE, X
+        INX
+
+        LDA (gridStartLoPtr), Y
+        STA NMT_UPDATE, X
+        INX
+
+        STX NMT_UPDATE_LEN
+
+        CPX #27
+        BMI @UpdateComplete
+        JSR PPU_Update
+
+@UpdateComplete
+        LDX tempX
+        LDY tempY
+        RTS
+;-------------------------------------------------------------------------
+; WriteScreenBufferLine
+;-------------------------------------------------------------------------
 WriteScreenBufferLine
         LDA #0
-        STA tempCounter
+        STA tempY
         LDY #0
 @Loop
 
@@ -592,7 +628,7 @@ WriteScreenBufferLine
         INX
 
         LDA screenBufferLoPtr
-        ADC tempCounter
+        ADC tempY
         STA NMT_UPDATE, X
         INX
 
@@ -602,7 +638,7 @@ WriteScreenBufferLine
 
         STX NMT_UPDATE_LEN
 
-        INC tempCounter
+        INC tempY
         INY
         CPY #SCREEN_WIDTH - 1
         BNE @Loop
@@ -1907,6 +1943,7 @@ b8761   CMP droidDecaySequence,X
 
 b876A   LDA droidDecaySequence + $01,X
         STA (gridStartLoPtr),Y
+        JSR WriteGridStartCharacter
 
         ; Clear bonus bits for missing the opportunity to destroy the pod
         ; left by a lazer.
@@ -1926,6 +1963,8 @@ b877C   LDA previousLasersHiPtrArray,X
 
         LDA #POD1
         STA (gridStartLoPtr),Y
+        JSR WriteGridStartCharacter
+
         RTS 
 
 b8789   LDA gridStartLoPtr
@@ -1965,6 +2004,7 @@ DrawFallingBomb
         LDY #$00
         TYA 
         STA (gridStartLoPtr),Y
+        JSR WriteGridStartCharacter
 
         LDA gridStartHiPtr
         PHA 
@@ -1973,6 +2013,7 @@ DrawFallingBomb
         STA gridStartHiPtr
         LDA #GRID_BLUE
         STA (gridStartLoPtr),Y
+
         PLA 
         STA gridStartHiPtr
         LDA gridStartLoPtr
@@ -1996,6 +2037,8 @@ b87E3   CMP bottomZapperValues,X
 
         LDA #BOMB
         STA (gridStartLoPtr),Y
+        JSR WriteGridStartCharacter
+
         LDA gridStartHiPtr
         PHA 
         CLC 
@@ -2003,6 +2046,7 @@ b87E3   CMP bottomZapperValues,X
         STA gridStartHiPtr
         LDA #$01
         STA (gridStartLoPtr),Y
+
         LDX tempCounter
         LDA gridStartLoPtr
         STA previousLasersLoPtrsArray,X
