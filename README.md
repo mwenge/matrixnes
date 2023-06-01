@@ -1,7 +1,7 @@
-# Gridrunner by Jeff Minter (NES)
-<img width="460" src="https://github.com/mwenge/gridnes/assets/58846/26e05987-7d5c-476b-9375-a9b0b69ba2d6">
+# Matrix by Jeff Minter (NES)
+<img width="460" src="https://github.com/mwenge/matrixnes/assets/58846/26e05987-7d5c-476b-9375-a9b0b69ba2d6">
 
-Jeff Minter never ported his game [Gridrunner] to the Nintendo Entertainment system. So I did. Maybe I don't know what I'm doing.
+Jeff Minter never ported his game [Matrix] to the Nintendo Entertainment system. So I did. Maybe I don't know what I'm doing.
 
 <!-- vim-markdown-toc GFM -->
 
@@ -14,7 +14,7 @@ Jeff Minter never ported his game [Gridrunner] to the Nintendo Entertainment sys
 <!-- vim-markdown-toc -->
 
 ## Play Online
-You can play it [online here](https://mwenge.github.io/gridnes).
+You can play it [online here](https://mwenge.github.io/matrixnes).
 
 ## Play
 On Ubuntu you can install [FCEUX], the NES emulator, as follows:
@@ -22,10 +22,10 @@ On Ubuntu you can install [FCEUX], the NES emulator, as follows:
 sudo apt install fceux
 ```
 
-Once you have that installed, you can [download the game](https://github.com/mwenge/psynes/raw/master/bin/gridrunner.nes) and play it:
+Once you have that installed, you can [download the game](https://github.com/mwenge/matrixnes/raw/master/bin/matrix.nes) and play it:
 
 ```
-fceux gridrunner.nes
+fceux matrix.nes
 ```
 
 ### Controls
@@ -44,7 +44,7 @@ $ make
 ```
 
 ## About
-Made out of curiosity as part of the [Gridrunner](https://github.com/mwenge/gridrunner) project.
+Made out of curiosity as part of the [Matrix](https://github.com/mwenge/matrix) project.
 This [example project](https://github.com/bbbradsmith/NES-ca65-example/) was a big help in getting started.
 Let's face it: it's slow. I'm still thinking of what I can do about that.
 
@@ -52,4 +52,4 @@ Let's face it: it's slow. I'm still thinking of what I can do about that.
 [cc65]: https://cc65.github.io/
 [FCEUX]: https://fceux.com/
 [llamaSource]: https://en.wikipedia.org/wiki/Trip-a-Tron
-[Gridrunner]: https://en.wikipedia.org/wiki/Gridrunner_(light_synthesizer)
+[Matrix]: https://en.wikipedia.org/wiki/Matrix_(light_synthesizer)
