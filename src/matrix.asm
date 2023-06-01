@@ -4117,7 +4117,7 @@ ZoneClearedEffectLoop
 
         ; Choose a new color and prepare to paint another round of 
         ; text at a new Y position.
-b9704   LDA #$0E
+b9704   LDA #$0A
         STA currentXPosition
         LDA linesToDrawCounter
         AND #$07
@@ -4210,7 +4210,7 @@ b979F   STA charSetLocation - $0001,X
         STA colorForCurrentCharacter
         LDA #$0F
         STA currentYPosition
-b97AD   LDA #$09
+b97AD   LDA #$04
         STA currentXPosition
         LDA #GRID
         STA currentCharacter
@@ -4225,7 +4225,7 @@ b97B5   JSR WriteCurrentCharacterToCurrentXYPos
         BNE b97AD
         LDA #$10
         STA currentYPosition
-        LDA #$0B
+        LDA #$08
         STA currentXPosition
 
         ; Draw the Mystery Bonus text
@@ -4549,6 +4549,7 @@ TitleScreenCheckJoystickKeyboardInput
         BEQ b9A40
 
         INC SCREEN_RAM + $0199
+        JSR WriteScreenBufferToNMT
         LDA SCREEN_RAM + $0199
 
         CMP #$37
@@ -4556,8 +4557,10 @@ TitleScreenCheckJoystickKeyboardInput
 
         LDA #$31
         STA SCREEN_RAM + $0199
+        JSR WriteScreenBufferToNMT
 
-b9A40   LDA joystickInput
+b9A40
+        LDA joystickInput
         AND #PAD_A
         BNE b9A4B
         LDX tempCounter2
