@@ -1,5 +1,5 @@
 # Matrix by Jeff Minter (NES)
-<img width="460" src="https://github.com/mwenge/matrixnes/assets/58846/26e05987-7d5c-476b-9375-a9b0b69ba2d6">
+<img width="460" src="https://github.com/mwenge/matrixnes/assets/58846/99e6b8ee-0fcb-40c6-84bd-a8f3d84e715c">
 
 Jeff Minter never ported his game [Matrix] to the Nintendo Entertainment system. So I did. Maybe I don't know what I'm doing.
 
