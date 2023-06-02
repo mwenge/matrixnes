@@ -307,7 +307,7 @@ PALETTE        .res 32  ; PALETTE BUFFER FOR PPU UPDATE
 
 .segment "RODATA"
 example_palette
-.byte $0F,$15,$38,$30 ; bg0 purple/pink
+.byte $0F,$15,$3C,$30 ; bg0 purple/pink
 .byte $0F,$09,$23,$38 ; bg1 green
 .byte $0F,$2A,$31,$38 ; bg2 blue
 .byte $0F,$00,$35,$3A ; bg3 greyscale
@@ -822,6 +822,7 @@ InitializeScreenLinePtrArray
 ; just batch it all in one go.
 ;-------------------------------------------------------------------------
 WriteScreenBufferToNMT
+        JSR PPU_Update
         JSR PPU_Off
 
         ; first nametable, start by clearing to empty
@@ -4081,10 +4082,11 @@ RestartLevel
         JSR ClearGameScreen
         LDA #$0A
         STA currentYPosition
-        LDA #$10
+        LDA #$0C
         STA currentXPosition
         LDA #CYAN
         STA colorForCurrentCharacter
+
         LDX #$00
 b967D   LDA txtGotYou,X
         STX gridStartHiPtr
@@ -4095,11 +4097,15 @@ b967D   LDA txtGotYou,X
         INX 
         CPX #$08
         BNE b967D
+        JSR PPU_Update
+
         JSR PlayChord
+
         LDA #$0F
         STA soundModeAndVol
         ;STA $D418    ;Select Filter Mode and Volume
         JSR PlayNote2
+
         LDX #$0A
 b96A0   LDA #$20
         STA voice3FreqHiVal
@@ -4114,6 +4120,7 @@ b96A7   DEY
         BNE b96A5
         DEX 
         BNE b96A0
+
         LDX #$07
 b96BF   LDA #$80
         STA voice3FreqHiVal
@@ -4132,6 +4139,7 @@ b96C6   DEY
         ;STA $D418    ;Select Filter Mode and Volume
         DEX 
         BNE b96BF
+
         JMP EnterMainGameLoop
 
 .SEGMENT  "RODATA"
@@ -4178,6 +4186,7 @@ b9714   LDA txtZoneCleared,X
         INX 
         CPX #$0C
         BNE b9714
+        JSR PPU_Update
 
         ; Shift the text down a line and paint in a different color.
         INC linesToDrawCounter
@@ -4185,6 +4194,7 @@ b9714   LDA txtZoneCleared,X
         LDA currentYPosition
         CMP #$0B
         BNE b9704
+        JSR PPU_Update
 
         ; Play the sound effects
         LDA #$08
@@ -4203,6 +4213,7 @@ b9739   DEY
         AND #$C0
         CMP #$C0
 
+        JSR PPU_Update
         ; Start the from the beginning to create the rolling effect.
         BNE ZoneClearedEffectLoop
 
@@ -4226,6 +4237,8 @@ b975B   DEY
         BNE b9756
         LDA mysteryBonusEarned
         BNE MysteryBonusSequence
+
+        JSR PPU_Update
         JMP EnterMainGameLoop
 
 .SEGMENT  "RODATA"
@@ -4283,6 +4296,7 @@ b97D6   LDA txtMysteryBonus,X
         INX 
         CPX #$12
         BNE b97D6
+        JSR PPU_Update
 
         ; Draw the Mystery Bonus value
         DEC currentXPosition
@@ -4298,6 +4312,7 @@ b97D6   LDA txtMysteryBonus,X
         LDX #$04
         LDY mysteryBonusEarned
         JSR IncreaseScore
+        JSR PPU_Update
 
         LDA #$D0
         STA gridStartHiPtr
