@@ -327,7 +327,7 @@ PALETTE        .res 32  ; PALETTE BUFFER FOR PPU UPDATE
 .segment "RODATA"
 
 example_palette
-.byte $0F,$15,$3C,$30 ; bg0 purple/pink
+.byte $0F,$11,$3C,$30 ; bg0 purple/pink
 .byte $0F,$09,$23,$38 ; bg1 green
 .byte $0F,$2A,$31,$38 ; bg2 blue
 .byte $0F,$00,$35,$3A ; bg3 greyscale
@@ -1072,11 +1072,13 @@ DrawGridLineEntrySequence
         STA screenBufferHiPtr
         LDA #<SCREEN_RAM + $A0
         STA screenBufferLoPtr
-b8183   LDA #$00
+
+b8183   LDA #$01
         LDY #GRID_WIDTH
 b8187   STA (screenBufferLoPtr),Y
         DEY 
         BNE b8187
+        JSR WriteCurrentCharacterToCurrentXYPos
 
         ; Draw the color values
         LDA screenBufferHiPtr
@@ -1092,6 +1094,8 @@ b8187   STA (screenBufferLoPtr),Y
 b819B   STA (screenBufferLoPtr),Y
         DEY 
         BNE b819B
+        JSR WriteCurrentCharacterToCurrentXYPos
+
         LDA screenBufferLoPtr
         ADC #GRID_WIDTH
         STA screenBufferLoPtr
@@ -1102,10 +1106,12 @@ b819B   STA (screenBufferLoPtr),Y
         LDA gridStartLoPtr
         CMP #$08
         BNE b81B7
+
         LDA #$01
         STA gridStartLoPtr
 b81B7   DEC gridStartHiPtr
         BNE b8183
+        JSR WriteCurrentCharacterToCurrentXYPos
         RTS 
 
 ;---------------------------------------------------------------------------------
