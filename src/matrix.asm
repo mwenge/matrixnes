@@ -84,6 +84,8 @@ screenLineHiPtr                              .res 1
 rollingGridPreviousChar                      .res 1
 cyclesToWaste                                .res 1
 lastKeyPressed                               .res 1
+currentBank                                  .res 1
+bankSwitchRate                               .res 1
 
 soundModeAndVol                              .res 1
 voice1FreqHiVal                              .res 1
@@ -192,6 +194,9 @@ PAD_D              = $20
 PAD_L              = $40
 PAD_R              = $80
 
+.segment "DATA"
+bankValues .byte 0,1,2,3
+
 .segment "RAM"
 screenLinesLoPtrArray .res 30
 screenLinesHiPtrArray .res 30
@@ -262,13 +267,13 @@ MATERIALIZE_OFFSET = $0D
 ; Lots of stuff configured in here which you have to look
 ; up online in order to understand it!
 .SEGMENT "HEADER"
-INES_MAPPER = 0 ; 0 = NROM
+INES_MAPPER = 3 ; 0 = NROM
 INES_MIRROR = 1 ; 0 = HORIZONTAL MIRRORING, 1 = VERTICAL MIRRORING
 INES_SRAM   = 1 ; 1 = BATTERY BACKED SRAM AT $6000-7FFF
 
 .BYTE 'N', 'E', 'S', $1A ; ID
 .BYTE $02 ; 16K PRG CHUNK COUNT
-.BYTE $01 ; 8K CHR CHUNK COUNT
+.BYTE $03 ; 8K CHR CHUNK COUNT
 .BYTE INES_MIRROR | (INES_SRAM << 1) | ((INES_MAPPER & $F) << 4)
 .BYTE (INES_MAPPER & %11110000)
 .BYTE $0, $0, $0, $0, $0, $0, $0, $0 ; PADDING
@@ -277,8 +282,22 @@ INES_SRAM   = 1 ; 1 = BATTERY BACKED SRAM AT $6000-7FFF
 ; CHR ROM
 ;
 
-.SEGMENT "TILES"
-.include "charset.asm"
+.SCOPE CHR0
+  .SEGMENT "CHR0"
+  .include "charset.asm"
+.ENDSCOPE
+.SCOPE CHR1
+  .SEGMENT "CHR1"
+  .include "charset2.asm"
+.ENDSCOPE
+.SCOPE CHR2
+  .SEGMENT "CHR2"
+  .include "charset3.asm"
+.ENDSCOPE
+.SCOPE CHR3
+  .SEGMENT "CHR3"
+  .include "charset4.asm"
+.ENDSCOPE
 
 ;
 ; Configure each of the NMT Interrupt handler, the Initialization routine
@@ -306,6 +325,7 @@ NMT_UPDATE     .res 256 ; NAMETABLE UPDATE ENTRY BUFFER FOR PPU UPDATE
 PALETTE        .res 32  ; PALETTE BUFFER FOR PPU UPDATE
 
 .segment "RODATA"
+
 example_palette
 .byte $0F,$15,$3C,$30 ; bg0 purple/pink
 .byte $0F,$09,$23,$38 ; bg1 green
@@ -473,11 +493,24 @@ MainNMIInterruptHandler
         LDX #0
         STX NMI_READY
 
+
 @PPU_UPDATE_END
         ; IF THIS ENGINE HAD MUSIC/SOUND, THIS WOULD BE A GOOD PLACE TO PLAY IT
         ; UNLOCK RE-ENTRY FLAG
         LDA #0
         STA NMI_LOCK
+
+        DEC bankSwitchRate
+        BNE @NMI_END
+
+        LDA #$02
+        STA bankSwitchRate
+        ; Bank switching
+        INC currentBank
+        LDA currentBank
+        AND #$03
+        TAX
+        STA bankValues,X
 
 @NMI_END
         ; RESTORE REGISTERS AND RETURN
@@ -4797,6 +4830,4 @@ PlayASoundEffect2
         LDA #$0F
         ;STA $D418    ;Select Filter Mode and Volume
         RTS 
-
-
 
