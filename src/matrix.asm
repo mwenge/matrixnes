@@ -84,8 +84,6 @@ screenLineHiPtr                              .res 1
 rollingGridPreviousChar                      .res 1
 cyclesToWaste                                .res 1
 lastKeyPressed                               .res 1
-currentBank                                  .res 1
-bankSwitchRate                               .res 1
 
 soundModeAndVol                              .res 1
 voice1FreqHiVal                              .res 1
@@ -93,13 +91,17 @@ voice2FreqHiVal                              .res 1
 voice2FreqHiVal2                             .res 1
 voice3FreqHiVal                              .res 1
 
-screenBufferLoPtr             .RES 1
-screenBufferHiPtr             .RES 1
+screenBufferLoPtr                            .RES 1
+screenBufferHiPtr                            .RES 1
 
-previousFrameButtons          .res 1
-buttons                       .res 1
-pressedButtons                .res 1
-releasedButtons               .res 1
+chrUpdateHiPtr                               .res 1
+chrUpdateLoPtr                               .res 1
+currentCHRByte                               .res 1
+
+previousFrameButtons                         .res 1
+buttons                                      .res 1
+pressedButtons                               .res 1
+releasedButtons                              .res 1
 
 tempX .res 1
 tempY .res 1
@@ -194,12 +196,10 @@ PAD_D              = $20
 PAD_L              = $40
 PAD_R              = $80
 
-.segment "DATA"
-bankValues .byte 0,1,2,3
-
 .segment "RAM"
 screenLinesLoPtrArray .res 30
 screenLinesHiPtrArray .res 30
+gridTile .res 16 
 
 ; Importsant: SRAM must start with screenBuffer
 ; because we depend on it starting at $6000.
@@ -246,7 +246,12 @@ scrollingTextStorage                         .res $200
 
 .segment "CODE"
 ; The raw address for PPU's screen ram.
-PPU_SCREEN_RAM     = $2000
+PPU_SCREEN_RAM = $2000
+
+PPUMASK        = $2001
+PPUADDR        = $2006
+PPUDATA        = $2007
+
 ; SCREEN_RAM is our address to screenBuffer
 SCREEN_RAM         = $6020
 COLOR_RAM          = $9020
@@ -267,37 +272,16 @@ MATERIALIZE_OFFSET = $0D
 ; Lots of stuff configured in here which you have to look
 ; up online in order to understand it!
 .SEGMENT "HEADER"
-INES_MAPPER = 3 ; 0 = NROM
+INES_MAPPER = 0 ; 0 = NROM
 INES_MIRROR = 1 ; 0 = HORIZONTAL MIRRORING, 1 = VERTICAL MIRRORING
-INES_SRAM   = 1 ; 1 = BATTERY BACKED SRAM AT $6000-7FFF
+INES_SRAM   = 0 ; 1 = BATTERY BACKED SRAM AT $6000-7FFF
 
 .BYTE 'N', 'E', 'S', $1A ; ID
 .BYTE $02 ; 16K PRG CHUNK COUNT
-.BYTE $03 ; 8K CHR CHUNK COUNT
+.BYTE $00 ; 8K CHR CHUNK COUNT
 .BYTE INES_MIRROR | (INES_SRAM << 1) | ((INES_MAPPER & $F) << 4)
 .BYTE (INES_MAPPER & %11110000)
 .BYTE $0, $0, $0, $0, $0, $0, $0, $0 ; PADDING
-
-;
-; CHR ROM
-;
-
-.SCOPE CHR0
-  .SEGMENT "CHR0"
-  .include "charset.asm"
-.ENDSCOPE
-.SCOPE CHR1
-  .SEGMENT "CHR1"
-  .include "charset2.asm"
-.ENDSCOPE
-.SCOPE CHR2
-  .SEGMENT "CHR2"
-  .include "charset3.asm"
-.ENDSCOPE
-.SCOPE CHR3
-  .SEGMENT "CHR3"
-  .include "charset4.asm"
-.ENDSCOPE
 
 ;
 ; Configure each of the NMT Interrupt handler, the Initialization routine
@@ -314,6 +298,7 @@ NMI_LOCK       .res 1 ; PREVENTS NMI RE-ENTRY
 NMI_COUNT      .res 1 ; IS INCREMENTED EVERY NMI
 NMI_READY      .res 1 ; SET TO 1 TO PUSH A PPU FRAME UPDATE, 2 TO TURN RENDERING OFF NEXT NMI
 NMT_UPDATE_LEN .res 1 ; NUMBER OF BYTES IN NMT_UPDATE BUFFER
+CHR_UPDATE_LEN .res 1 ; NUMBER OF BYTES IN NMT_UPDATE BUFFER
 SCROLL_X       .res 1 ; X SCROLL POSITION
 SCROLL_Y       .res 1 ; Y SCROLL POSITION
 SCROLL_NMT     .res 1 ; NAMETABLE SELECT (0-3 = $2000,$2400,$2800,$2C00)
@@ -322,6 +307,7 @@ BATCH_SIZE     .res 1
 
 .segment "RAM"
 NMT_UPDATE     .res 256 ; NAMETABLE UPDATE ENTRY BUFFER FOR PPU UPDATE
+CHR_UPDATE     .res 256 ; NAMETABLE UPDATE ENTRY BUFFER FOR PPU UPDATE
 PALETTE        .res 32  ; PALETTE BUFFER FOR PPU UPDATE
 
 .segment "RODATA"
@@ -346,6 +332,65 @@ IRQInterruptHandler
         RTI
 
 ;-------------------------------------------------------
+; AddToCHRUpdateTable
+;-------------------------------------------------------
+AddToCHRUpdateTable
+        STA currentCHRByte
+        PHA
+        TXA
+        PHA
+        TYA
+        PHA
+
+        LDX CHR_UPDATE_LEN
+
+        LDA chrUpdateHiPtr
+        STA CHR_UPDATE, X
+        INX
+
+        LDA chrUpdateLoPtr
+        STA CHR_UPDATE, X
+        INX
+
+        LDA currentCHRByte
+        STA CHR_UPDATE, X
+        INX
+
+        STX CHR_UPDATE_LEN
+
+        PLA
+        TAY
+        PLA
+        TAX
+        PLA
+        RTS
+      
+src = 0
+;-------------------------------------------------------
+; CopyCharsetToCHRRam
+;-------------------------------------------------------
+CopyCharsetToCHRRam
+        LDA #<charsetData  ; LOAD THE SOURCE ADDRESS INTO A POINTER IN ZERO PAGE
+        STA src
+        LDA #>charsetData
+        STA src+1
+
+        LDY #0       ; STARTING INDEX INTO THE FIRST PAGE
+        STY PPUMASK  ; TURN OFF RENDERING JUST IN CASE
+        STY PPUADDR  ; LOAD THE DESTINATION ADDRESS INTO THE PPU
+        STY PPUADDR
+        LDX #32      ; NUMBER OF 256-BYTE PAGES TO COPY
+@Loop:
+        LDA (src),Y  ; COPY ONE BYTE
+        STA PPUDATA
+        INY
+        BNE @Loop  ; REPEAT UNTIL WE FINISH THE PAGE
+        INC src+1  ; GO TO THE NEXT PAGE
+        DEX
+        BNE @Loop  ; REPEAT UNTIL WE'VE COPIED ENOUGH PAGES
+        RTS
+
+;-------------------------------------------------------
 ; InitializeNES
 ; THis is where execution starts.
 ;-------------------------------------------------------
@@ -356,6 +401,8 @@ InitializeNES
         LDA #0
         STA $2000 ; DISABLE NMI
         STA $2001 ; DISABLE RENDERING
+
+
         LDA #$0F
         STA $4015 ; DISABLE APU SOUND
         ;STA $4010 ; DISABLE DMC IRQ
@@ -383,6 +430,8 @@ InitializeNES
           STA $0700, X
           INX
           BNE :-
+
+        JSR CopyCharsetToCHRRam
 
         ; WAIT FOR SECOND VBLANK
         :
@@ -413,6 +462,19 @@ MainNMIInterruptHandler
         TYA
         PHA
 
+        ; The grid tile is always getting updated so update it every
+        ; time here.
+        LDY #0      
+        STY PPUADDR
+        STY PPUADDR
+        LDY #0
+        :
+          LDA gridTile,Y
+          STA PPUDATA
+          INY
+          CPY #8
+          BCC :-
+
         ; PREVENT NMI RE-ENTRY
         LDA NMI_LOCK
         BEQ :+
@@ -423,6 +485,7 @@ MainNMIInterruptHandler
         ; INCREMENT FRAME COUNTER
         INC NMI_COUNT
         ;
+
         LDA NMI_READY
         BNE :+ ; NMI_READY == 0 NOT READY TO UPDATE PPU
           JMP @PPU_UPDATE_END
@@ -448,6 +511,7 @@ MainNMIInterruptHandler
         STA $2006
         STX $2006 ; SET PPU ADDRESS TO $3F00
 
+        ; Update the palette.
         LDY #0
         :
           LDA example_palette, Y
@@ -456,7 +520,28 @@ MainNMIInterruptHandler
           CPY #16
           BCC :-
 
+        ; Char table update. Any other updates to the tiles get caught
+        ; here.
+        LDX #0
+        CPX CHR_UPDATE_LEN
+        BCS @NMT_UPDATE
 
+@CHR_UPDATE_LOOP
+          LDA CHR_UPDATE, X
+          STA $2006
+          INX
+          LDA CHR_UPDATE, X
+          STA $2006
+          INX
+          LDA CHR_UPDATE, X
+          STA $2007
+          INX
+          CPX CHR_UPDATE_LEN
+          BCC @CHR_UPDATE_LOOP
+        LDA #0
+        STA CHR_UPDATE_LEN
+
+@NMT_UPDATE
         ; NAMETABLE UPDATE
         LDX #0
         CPX NMT_UPDATE_LEN
@@ -499,18 +584,6 @@ MainNMIInterruptHandler
         ; UNLOCK RE-ENTRY FLAG
         LDA #0
         STA NMI_LOCK
-
-        DEC bankSwitchRate
-        BNE @NMI_END
-
-        LDA #$02
-        STA bankSwitchRate
-        ; Bank switching
-        INC currentBank
-        LDA currentBank
-        AND #$03
-        TAX
-        STA bankValues,X
 
 @NMI_END
         ; RESTORE REGISTERS AND RETURN
@@ -644,6 +717,7 @@ WriteGridStartCharacter
         LDX tempX
         LDY tempY
         RTS
+
 ;-------------------------------------------------------------------------
 ; WriteScreenBufferLine
 ;-------------------------------------------------------------------------
@@ -713,7 +787,7 @@ WriteCurrentCharacterToCurrentXYPos
         JSR GetLinePtrForCurrentYPosition
         JSR AddPixelToNMTUpdate
         ; If we've got a few to write, let them do that now.
-        CPX #27
+        CPX #30
         BMI @UpdateComplete
         JSR PPU_Update
 
@@ -1073,12 +1147,12 @@ DrawGridLineEntrySequence
         LDA #<SCREEN_RAM + $A0
         STA screenBufferLoPtr
 
-b8183   LDA #$01
+b8183   LDA #$00
         LDY #GRID_WIDTH
 b8187   STA (screenBufferLoPtr),Y
         DEY 
         BNE b8187
-        JSR WriteCurrentCharacterToCurrentXYPos
+        JSR WriteScreenBufferLine
 
         ; Draw the color values
         LDA screenBufferHiPtr
@@ -1094,7 +1168,7 @@ b8187   STA (screenBufferLoPtr),Y
 b819B   STA (screenBufferLoPtr),Y
         DEY 
         BNE b819B
-        JSR WriteCurrentCharacterToCurrentXYPos
+        JSR WriteScreenBufferLine
 
         LDA screenBufferLoPtr
         ADC #GRID_WIDTH
@@ -1111,7 +1185,7 @@ b819B   STA (screenBufferLoPtr),Y
         STA gridStartLoPtr
 b81B7   DEC gridStartHiPtr
         BNE b8183
-        JSR WriteCurrentCharacterToCurrentXYPos
+
         RTS 
 
 ;---------------------------------------------------------------------------------
@@ -1127,25 +1201,27 @@ BeginGameEntrySequence
 
         LDA #$00
         LDX #$08
-b81D0   STA charSetLocation - $0001,X
-        DEX 
+b81D0   STA gridTile - $0001,X
+        DEX
         BNE b81D0
 
         ; This sequence draws the grid animation when entering a level.
 
         ; In this loop each iteration adds a line to the top of the screen creating
         ; the effect of pulsing colored lines coming down the screen
-        LDA #$13
+        LDA #$10
         STA tempCounter
         LDA #$01
         STA tempCounter2
 GridAnimLoop
         LDA tempCounter2
         STA gridStartLoPtr
-        LDA #$14
+
+        LDA #$11
         SEC 
         SBC tempCounter
         STA gridStartHiPtr
+
         LDA soundModeAndVol
         ;STA $D418    ;Select Filter Mode and Volume
         INC soundModeAndVol
@@ -1153,10 +1229,12 @@ GridAnimLoop
         CMP #$10
         BNE b81FC
         DEC soundModeAndVol
+
 b81FC   JSR DrawGridLineEntrySequence
+
         LDX #$00
 b8201   LDA #$FF
-        STA charSetLocation,X
+        STA gridTile,X
         TXA 
         PHA 
         LDA #$80
@@ -1166,9 +1244,10 @@ b8201   LDA #$FF
         JSR WasteXYCycles
         PLA 
         TAX 
+        JSR PPU_Update
         JSR WasteAFewCycles
         LDA #$00
-        STA charSetLocation,X
+        STA gridTile,X
         INX 
         CPX #$08
         BNE b8201
@@ -1184,7 +1263,7 @@ b822A   DEC tempCounter
         ; by altering the value of the character used to draw the lines.
         LDX #$08
 b8230   LDA #$FF
-        STA charSetLocation - $0001,X
+        STA gridTile - $01,X
         TXA 
         PHA 
         LDA #$F0
@@ -1230,10 +1309,10 @@ b8274   DEY
 
         LDY #$08
 b827C   LDX gridStartHiPtr
-        LDA charSetLocation + $02D8,X
-        STA charSetLocation - $0001,Y
+        LDA charsetData + $02D8,X
+        STA gridTile - $0001,Y
         INC gridStartHiPtr
-        DEY 
+        DEY
         BNE b827C
 
         LDA soundModeAndVol
@@ -1425,7 +1504,6 @@ MainGameLoop
         JSR AnimateCamelsAndLaserZaps
         JSR AnimateDroidSquads
         JSR DrawDeflexor
-        JSR CheckForCheatKeySequence
         JMP MainGameLoop
 
 .SEGMENT  "RODATA"
@@ -1623,42 +1701,6 @@ b84F0   JSR DrawShipInCurrentPosition
         DEC currentXPosition
         DEC currentXPosition
 b8507   JMP WriteCurrentCharacterToCurrentXYPos
-        ; Returns
-
-;-------------------------------------------------------------------------
-; CheckForCheatKeySequence
-; Minter writes:
-; "I never did get through all 20 levels without
-; resorting to cheating (the cheat mode is accessed by holding down
-; Commodore, Shift, CTRL and a letter key, and is left over from when
-; I was testing the levels), best I managed legitimately was to reach
-; Level 17."
-;-------------------------------------------------------------------------
-CheckForCheatKeySequence
-        LDA #$06
-        LDA lastKeyPressed
-        CMP #$40
-        BNE b8513
-b8512   RTS 
-
-b8513   LDA $028D ; Ctrl/Shift/Commodore key pressed?
-        AND #$07
-        CMP #$07
-        BEQ b852D
-        CMP #$02
-        BNE b8512
-b8520   LDA lastKeyPressed
-        CMP #$40
-        BNE b8520
-b8526   LDA lastKeyPressed
-        CMP #$40
-        BEQ b8526
-        RTS 
-
-        ; Ctrl/Shift/Commodore Key (i.e. ctrl, tab, and shift) held down
-        ; together along with another key will skip to next level, add a new
-        ; life, and award a mystery bonus.
-b852D   JMP CheatByIncrementingLifeAndSkipLevel
         ; Returns
 
 ;-------------------------------------------------------------------------
@@ -2219,11 +2261,14 @@ b88A8   PLA
 ; AnimateMatrixTitle
 ;-------------------------------------------------------------------------
 AnimateMatrixTitle
-        LDA charSetLocation + $0109
+        LDA #$02
+        STA chrUpdateHiPtr
+        LDA #$12
+        STA chrUpdateLoPtr
+        LDA charsetData + $0212
         ROL 
         ADC #$00
-        ;FIXME: should this be charSetLocation + $0109 like in Vic20?
-        STA wrongCharSetLocation
+        JSR AddToCHRUpdateTable
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -3733,16 +3778,19 @@ DelayThenAdvanceRollingGridAnimation
 ; PerformRollingGridAnimation
 ;-------------------------------------------------------------------------
 PerformRollingGridAnimation
-        LDA charSetLocation + $0007
+        LDA gridTile + $0007
         STA rollingGridPreviousChar
+
         LDX #$07
-b93FA   LDA charSetLocation - $0001,X
-        STA charSetLocation,X
-        DEX 
+b93FA   LDA gridTile - $0001,X
+        STA gridTile,X
+        DEX
         BNE b93FA
 
+
         LDA rollingGridPreviousChar
-        STA charSetLocation
+        STA gridTile
+
         LDA currentLevelConfiguration
         AND #$80
         BEQ b9411
@@ -3785,8 +3833,8 @@ b943B   JSR DelayThenAdvanceRollingGridAnimation
 ;---------------------------------------------------------------------------------
 ; Patterns used for SetGridPattern
 ;---------------------------------------------------------------------------------
-regularGridPattern=*-$01
-        .BYTE $30,$30,$30,$30,$FF,$30,$30,$30   ;.BYTE $30,$30,$30,$30,$FF,$30,$30,$30
+regularGridPattern
+        .BYTE $30,$30,$30,$30,$FF,$30,$30,$30,$00,$00,$00,$00,$00,$00,$00,$00
                                                 ; CHARACTER $00
                                                 ; 00110000     **    
                                                 ; 00110000     **    
@@ -3796,8 +3844,8 @@ regularGridPattern=*-$01
                                                 ; 00110000     **    
                                                 ; 00110000     **    
                                                 ; 00110000     **    
-blockyGridPattern=*-$01
-        .BYTE $00,$00,$3C,$3C,$3C,$3C,$00,$00   ;.BYTE $00,$00,$3C,$3C,$3C,$3C,$00,$00
+blockyGridPattern
+        .BYTE $00,$00,$3C,$3C,$3C,$3C,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
                                                 ; CHARACTER $01
                                                 ; 00000000           
                                                 ; 00000000           
@@ -3817,9 +3865,9 @@ SetGridPattern
         BNE b9479
 
         ; Normal Grid Pattern
-        LDX #$08
-b946F   LDA regularGridPattern,X
-        STA charSetLocation - $0001,X
+        LDX #8
+b946F   LDA regularGridPattern - $01,X
+        STA gridTile - $0001,X
         DEX 
         BNE b946F
         RTS 
@@ -3829,17 +3877,17 @@ b9479   LDA currentLevelConfiguration
         BNE b948A
 
         ; Empty Grid pattern
-        LDX #$08
+        LDX #16
         LDA #$00
-b9483   STA charSetLocation - $0001,X
+b9483   STA gridTile - $0001,X
         DEX 
         BNE b9483
         RTS 
 
         ; Blocky grid pattern
-b948A   LDX #$08
-b948C   LDA blockyGridPattern,X
-        STA charSetLocation - $0001,X
+b948A   LDX #16
+b948C   LDA blockyGridPattern - $01,X
+        STA gridTile - $0001,X
         DEX 
         BNE b948C
         RTS 
@@ -3851,10 +3899,10 @@ b948C   LDA blockyGridPattern,X
 ScrollGrid   
         LDX #$08
 b9498   CLC 
-        LDA charSetLocation - $0001,X
+        LDA gridTile - $0001,X
         ROL 
         ADC #$00
-        STA charSetLocation - $0001,X
+        STA gridTile - $0001,X
         DEX 
         BNE b9498
 b94A5   RTS 
@@ -3871,11 +3919,7 @@ CheckIfZoneCleared
         BNE b94A5
         LDA currentCameloidsLeft
         BNE b94A5
-        ; Falls through
-;---------------------------------------------------------------------------------
-; CheatByIncrementingLifeAndSkipLevel   
-;---------------------------------------------------------------------------------
-CheatByIncrementingLifeAndSkipLevel   
+
         INC currentLevel
         LDA currentLevel
         CMP #$15
@@ -4295,7 +4339,7 @@ MysteryBonusSequence
 
         LDX #$08
         LDA #$FF
-b979F   STA charSetLocation - $0001,X
+b979F   STA gridTile - $0001,X
         DEX 
         BNE b979F
 
@@ -4370,13 +4414,13 @@ b9810   DEY
         AND #$07
         TAX 
         LDA #$FF
-        STA charSetLocation,X
+        STA gridTile,X
         INC gridStartHiPtr
         LDA gridStartHiPtr
         AND #$07
         TAX 
         LDA #$00
-        STA charSetLocation,X
+        STA gridTile,X
         LDA gridStartHiPtr
         BNE b980B
 
@@ -4836,4 +4880,11 @@ PlayASoundEffect2
         LDA #$0F
         ;STA $D418    ;Select Filter Mode and Volume
         RTS 
+
+;
+; CHR RAM
+;
+.SEGMENT "RODATA"
+charsetData
+  .include "charset.asm"
 
