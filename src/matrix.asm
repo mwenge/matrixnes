@@ -684,7 +684,7 @@ GetLinePtrForCurrentYPosition
         RTS 
 
 ;-------------------------------------------------------------------------
-; WriteScreenBufferLine
+; WriteGridStartCharacter
 ;-------------------------------------------------------------------------
 WriteGridStartCharacter
         STX tempX
@@ -751,6 +751,15 @@ WriteScreenBufferLine
         BNE @Loop
         
         JSR PPU_Update
+        RTS
+
+;-------------------------------------------------------------------------
+; WriteCurrentCharacterToCurrentXYPosToNMTOnly
+;-------------------------------------------------------------------------
+WriteCurrentCharacterToCurrentXYPosToBufferOnly
+        JSR GetLinePtrForCurrentYPosition
+        LDA currentCharacter
+        STA (screenBufferLoPtr),Y
         RTS
 
 ;-------------------------------------------------------------------------
@@ -3672,7 +3681,7 @@ DrawEmptyGrid
         STA currentCharacter
 b9347   LDA #$00
         STA currentXPosition
-b934B   JSR WriteCurrentCharacterToCurrentXYPos
+b934B   JSR WriteCurrentCharacterToCurrentXYPosToBufferOnly
         INC currentXPosition
         LDA currentXPosition
         CMP #GRID_WIDTH + 1
@@ -3681,6 +3690,7 @@ b934B   JSR WriteCurrentCharacterToCurrentXYPos
         LDA currentYPosition
         CMP #$17
         BNE b9347
+        JSR WriteScreenBufferToNMT
 
         ; Draw grid
         LDA #GRID
@@ -3691,7 +3701,7 @@ b934B   JSR WriteCurrentCharacterToCurrentXYPos
         STA colorForCurrentCharacter
 b936A   LDA #$01
         STA currentXPosition
-b936E   JSR WriteCurrentCharacterToCurrentXYPos
+b936E   JSR WriteCurrentCharacterToCurrentXYPosToBufferOnly
         INC currentXPosition
         LDA currentXPosition
         CMP #GRID_WIDTH
@@ -3700,6 +3710,7 @@ b936E   JSR WriteCurrentCharacterToCurrentXYPos
         LDA currentYPosition
         CMP #GRID_HEIGHT + 1
         BNE b936A
+        JSR WriteScreenBufferToNMT
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -3764,7 +3775,7 @@ b93D2   LDA (screenBufferLoPtr),Y
 b93EA   DEX 
         BNE b93D2
 
-        JSR WriteScreenBufferLine
+        JSR WriteScreenBufferToNMT
         JMP PlayInterstitialSoundAndClearGrid
 
 ;-------------------------------------------------------------------------
