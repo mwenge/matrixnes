@@ -487,6 +487,7 @@ MainNMIInterruptHandler
         BEQ @CheckNMIEntry
 
         ; Scrolling text storage.
+        ; FIXME; Find a way of doing more than just 96 bytes.
         LDY #8      
         STY PPUADDR
         LDY #0      
@@ -1241,6 +1242,9 @@ BeginGameEntrySequence
 b81D0   STA gridTile - $0001,X
         DEX
         BNE b81D0
+
+        ; FIXME: For now skip the animation until we get it working.
+        JMP EnterMainGameLoop
 
         ; This sequence draws the grid animation when entering a level.
 
