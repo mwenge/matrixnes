@@ -84,6 +84,7 @@ screenLineHiPtr                              .res 1
 rollingGridPreviousChar                      .res 1
 cyclesToWaste                                .res 1
 lastKeyPressed                               .res 1
+onTitleScreen                                .res 1
 
 soundModeAndVol                              .res 1
 voice1FreqHiVal                              .res 1
@@ -98,13 +99,21 @@ chrUpdateHiPtr                               .res 1
 chrUpdateLoPtr                               .res 1
 currentCHRByte                               .res 1
 
+tmpLoPtr                                     .RES 1
+tmpHiPtr                                     .RES 1
+
 previousFrameButtons                         .res 1
 buttons                                      .res 1
 pressedButtons                               .res 1
 releasedButtons                              .res 1
 
-tempX .res 1
-tempY .res 1
+tempX                                        .res 1
+tempY                                        .res 1
+
+numLo                                        .res 1
+numHi                                        .res 1
+resLo                                        .res 1
+resHi                                        .res 1
 
 .segment "CODE"
 ;
@@ -241,7 +250,6 @@ currentDeflexorXPosArray                     .res $80
 currentDeflexorYPosArray                     .res $80
 mysteryBonusPerformance                      .res $80
 charSetLocation                              .res $200
-alphabetCharsetStorage                       .res $200
 scrollingTextStorage                         .res $200
 
 .segment "CODE"
@@ -475,6 +483,23 @@ MainNMIInterruptHandler
           CPY #8
           BCC :-
 
+        LDA onTitleScreen
+        BEQ @CheckNMIEntry
+
+        ; Scrolling text storage.
+        LDY #8      
+        STY PPUADDR
+        LDY #0      
+        STY PPUADDR
+        LDY #0
+        :
+          LDA scrollingTextStorage,Y
+          STA PPUDATA
+          INY
+          CPY #96 
+          BCC :-
+
+@CheckNMIEntry
         ; PREVENT NMI RE-ENTRY
         LDA NMI_LOCK
         BEQ :+
@@ -1201,6 +1226,9 @@ b81B7   DEC gridStartHiPtr
 ; BeginGameEntrySequence   
 ;---------------------------------------------------------------------------------
 BeginGameEntrySequence   
+        LDA #00
+        STA onTitleScreen
+
         LDA #$02
         ;STA $D40F    ;Voice 3: Frequency Control - High-Byte
         LDA #$03
@@ -4488,13 +4516,16 @@ mysteryBonusBenchmarks   =*-$01
 ; DrawTitleScreen
 ;-------------------------------------------------------------------------
 DrawTitleScreen
+        LDA #$01
+        STA onTitleScreen
         JSR ClearGameScreen
         LDA #CYAN
         STA colorForCurrentCharacter
         LDA #$04
         STA currentXPosition
         LDX #$00
-b988D   LDA #$05
+TitleScreenDrawLoop   
+        LDA #$05
         STA currentYPosition
         LDA txtTitleScreenLine1,X
         STA currentCharacter
@@ -4551,10 +4582,10 @@ b988D   LDA #$05
         INC currentXPosition
         INX 
         CPX #GRID_HEIGHT + 1
-        BNE b988D
+        BNE TitleScreenDrawLoop
 
         JMP DrawHiScore
-        ;Falls through to TitleScreenLoop
+        ;Falls through to ScrollingTextLoop
 
 
 .SEGMENT  "RODATA"
@@ -4565,15 +4596,15 @@ txtTitleScreenLine4     .BYTE " PRESS FIRE FOR START "
 txtTitleScreenLine5     .BYTE "SELECT START LEVEL   1"
 
 txtInitialScrollingText .BYTE $96,$95,$94,$93,$92,$91,$90,$8F
-                        .BYTE $8E,$8D,$8C,$8B,$8A,$89,$88,$87
                         .BYTE $86,$85,$84,$83,$82,$81
+                        .BYTE $8E,$8D,$8C,$8B,$8A,$89,$88,$87
 .SEGMENT  "CODE"
 ;---------------------------------------------------------------------------------
-; TitleScreenLoop   
+; ScrollingTextLoop   
 ;---------------------------------------------------------------------------------
-TitleScreenLoop   
+ScrollingTextLoop   
         LDX #$00
-ReenterTitleScrenLoop
+ReenterScrollingTextLoop
         JSR WasteAFewCycles
         LDA txtScrollingAllMatrixPilots,X
         AND #$3F
@@ -4593,67 +4624,98 @@ b9998   CMP #$2E
 b999F   CMP #$00
         BNE b99A6
         ; Restart the scrolling text animation
-        JMP TitleScreenLoop
+        JMP ScrollingTextLoop
         ;Returns
 
         ; Animate the scroll
 b99A6   CLC 
-        ASL 
-        ASL 
-        ASL 
-        TAY 
+        STA numLo
+        LDA #0
+        STA numHi
+        LDA #>alphabetCharsetStorage
+        STA tmpHiPtr
+        LDA #<alphabetCharsetStorage
+        STA tmpLoPtr
+        
+        ; Multiply the index by 16 to get the right offset
+        ; in alphabetCharsetStorage.
+        ASL numLo
+        ROL numHi
+        ASL numLo
+        ROL numHi
+        ASL numLo
+        ROL numHi
+        ASL numLo
+        ROL numHi
+
+        ; Add the number to the address for alphabetCharsetStorage
+        ; so that we now have the address of the character in resLo.
+        CLC
+        LDA tmpLoPtr
+        ADC numLo
+        STA resLo
+        LDA tmpHiPtr
+        ADC numHi
+        STA resHi
+
         STX tempCounter2
 
         ; Copy the alphabet charset to a location where
         ; we can manipulate it for scrolling.
-        LDX #$00
-b99AF   LDA alphabetCharsetStorage,Y
-        STA scrollingTextStorage,X
+        LDY #$00
+b99AF   LDA (resLo),Y
+        STA scrollingTextStorage,Y
         INY 
-        INX 
-        CPX #$08
+        CPY #$10
         BNE b99AF
         ; Fall through
 
+scrollSpeed = gridStartHiPtr
+shiftCounter = tempCounter
 ;---------------------------------------------------------------------------------
 ; ScrollTextLoop   
 ;---------------------------------------------------------------------------------
 ScrollTextLoop   
         LDX tempCounter2
-        LDA #$08
-        STA tempCounter
 
-b99C1   LDY #$00
-b99C3   LDA #$18
-        STA gridStartHiPtr
+        LDA #$08
+        STA shiftCounter
+TextLoop
+        LDY #$00
+IterLoop   
+        LDA #$10
+        STA scrollSpeed
         TYA 
         TAX 
         CLC 
 
         ; Scroll the text
-j99CA   ROL scrollingTextStorage,X
+@Scroll ROL scrollingTextStorage,X
         PHP 
         TXA 
         CLC 
-        ADC #$08
+        ADC #$10
         TAX 
-        DEC gridStartHiPtr
+        DEC scrollSpeed
         BEQ b99DB
         PLP 
-        JMP j99CA
+        JMP @Scroll
 
 b99DB   PLP 
         INY 
-        CPY #$08
-        BNE b99C3
+        CPY #$10
+        BNE IterLoop
+
         LDX #$0A
-b99E3   DEY 
-        BNE b99E3
+@Wait   DEY 
+        BNE @Wait
         DEX 
-        BNE b99E3
+        BNE @Wait
+
         JSR WasteAFewCycles
-        DEC tempCounter
-        BNE b99C1
+        DEC shiftCounter
+        BNE TextLoop
+
         LDX tempCounter2
         INX 
         JMP TitleScreenCheckJoystickKeyboardInput
@@ -4665,25 +4727,25 @@ b99E3   DEY
 HandleSpaceInScrollingText   
         STX tempCounter2
         LDA #$00
-        LDX #$08
-b99FD   STA charSetLocation + $03FF,X
+        LDX #$10
+b99FD   STA scrollingTextStorage - $01,X
         DEX 
         BNE b99FD
         JMP ScrollTextLoop
 
 HandleEllipsisInScrollingText
         STX tempCounter2
-        LDX #$08
-b9A0A   LDA charSetLocation + $03B7,X
-        STA charSetLocation + $03FF,X
+        LDX #$10
+b9A0A   LDA charsetData + $0770,X
+        STA scrollingTextStorage - $01,X
         DEX 
         BNE b9A0A
         JMP ScrollTextLoop
 
         STX tempCounter2
-        LDX #$08
-b9A1A   LDA charSetLocation + $03C7,X
-        STA charSetLocation + $03FF,X
+        LDX #$10
+b9A1A   LDA charsetData + $078E,X
+        STA scrollingTextStorage - $01,X
         DEX 
         BNE b9A1A
         JMP ScrollTextLoop
@@ -4715,7 +4777,7 @@ b9A40
         AND #PAD_A
         BNE b9A4B
         LDX tempCounter2
-        JMP ReenterTitleScrenLoop
+        JMP ReenterScrollingTextLoop
 
 b9A4B   LDA SCREEN_RAM + $0199
         SEC 
@@ -4833,7 +4895,7 @@ b9AFD   LDA txtHiScore,X
         BNE b9AFD
         JSR PPU_Update
 
-        JMP TitleScreenLoop
+        JMP ScrollingTextLoop
 
 ;-------------------------------------------------------------------------
 ; ReduceScore
@@ -4866,7 +4928,7 @@ txtHiScore                  .BYTE "HISCORE"
 ; This is a list of offsets into alphabetCharsetStorage. When scrolling
 ; the text on the title screen the letters in alphabetCharsetStorage this
 ; txtScrollingAllMatrixPilots references are copied into scrollingTextStorage
-; and shifted to achieve the scrolling effect. This is done in TitleScreenLoop
+; and shifted to achieve the scrolling effect. This is done in ScrollingTextLoop
 ; and ScrollTextLoop.
 
 ; The offsets into alphabetCharsetStorage here create the following text:
@@ -4882,6 +4944,8 @@ txtScrollingAllMatrixPilots .BYTE $01,$0C,$0C,$20,$0D,$01,$14,$12
                             .BYTE $02,$01,$14,$20,$04,$15,$14,$19
                             .BYTE $2E,$2E,$2E,$2E,$2E,$20,$20,$20
                             .BYTE $20,$20,$20,$20,$20,$20,$20,$00
+ 
+
 .SEGMENT  "CODE"
 ;-------------------------------------------------------------------------
 ; PlayASoundEffect2
