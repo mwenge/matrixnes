@@ -1,11 +1,11 @@
-; This is the reverse-engineered source code for the game 'Matrix' written by Jeff Minter in 1983.
+; This is based on the reverse-engineered source code for the game 'Matrix' written by Jeff Minter in 1983.
 ;
 ; The code in this file was created by disassembling a binary of the game released into
-; the public domain by Jeff Minter in 2019.
+; the public domain by Jeff Minter in 2019. It was then adapted to work on the NES.
 ;
 ; The original code from which this source is derived is the copyright of Jeff Minter.
 ;
-; The original home of this file is at: https://github.com/mwenge/matrix
+; The original home of this file is at: https://github.com/mwenge/matrixnex
 ;
 ; To the extent to which any copyright may apply to the act of disassembling and reconstructing
 ; the code from its binary, the author disclaims copyright to this source code.  In place of

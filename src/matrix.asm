@@ -1,11 +1,11 @@
-; This is the reverse-engineered source code for the game 'Matrix' written by Jeff Minter in 1983.
+; This is based on the reverse-engineered source code for the game 'Matrix' written by Jeff Minter in 1983.
 ;
 ; The code in this file was created by disassembling a binary of the game released into
-; the public domain by Jeff Minter in 2019.
+; the public domain by Jeff Minter in 2019. It was then adapted to work on the NES.
 ;
 ; The original code from which this source is derived is the copyright of Jeff Minter.
 ;
-; The original home of this file is at: https://github.com/mwenge/matrix
+; The original home of this file is at: https://github.com/mwenge/matrixnes
 ;
 ; To the extent to which any copyright may apply to the act of disassembling and reconstructing
 ; the code from its binary, the author disclaims copyright to this source code.  In place of
@@ -115,6 +115,17 @@ numHi                                        .res 1
 resLo                                        .res 1
 resHi                                        .res 1
 
+NMI_LOCK                                     .res 1 ; PREVENTS NMI RE-ENTRY
+NMI_COUNT                                    .res 1 ; IS INCREMENTED EVERY NMI
+NMI_READY                                    .res 1 ; SET TO 1 TO PUSH A PPU FRAME UPDATE, 2 TO TURN RENDERING OFF NEXT NMI
+NMT_UPDATE_LEN                               .res 1 ; NUMBER OF BYTES IN NMT_UPDATE BUFFER
+CHR_UPDATE_LEN                               .res 1 ; NUMBER OF BYTES IN NMT_UPDATE BUFFER
+SCROLL_X                                     .res 1 ; X SCROLL POSITION
+SCROLL_Y                                     .res 1 ; Y SCROLL POSITION
+SCROLL_NMT                                   .res 1 ; NAMETABLE SELECT (0-3 = $2000,$2400,$2800,$2C00)
+TEMP                                         .res 1 ; TEMPORARY VARIABLE
+BATCH_SIZE                                   .res 1
+
 .segment "CODE"
 ;
 ; **** POINTERS **** 
@@ -213,44 +224,27 @@ gridTile .res 16
 ; Importsant: SRAM must start with screenBuffer
 ; because we depend on it starting at $6000.
 .segment "SRAM"
-screenBuffer                  .res 960
-screenBufferLoPtrArray
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00
-screenBufferHiPtrArray
-        .BYTE $00,$00,$00,$00,$00,$00,$BF,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00
+screenBuffer              .res 960
+screenBufferLoPtrArray    .res 30
+screenBufferHiPtrArray    .res 30
+previousLasersLoPtrsArray .res 32
+previousLasersHiPtrArray  .res 32
+previousHiScore           .res 8
+wrongCharSetLocation      .res 1
+droidSquadsXPosArray      .res $80
+droidSquadsYPosArray      .res $80
 
-previousLasersLoPtrsArray
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-previousLasersHiPtrArray
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
-previousHiScore                              .res 8
-wrongCharSetLocation                         .res 1
-droidSquadsXPosArray                         .res $80
-droidSquadsYPosArray                         .res $80
+droidSquadState           .res $80
 
-droidSquadState                              .res $80
+cameloidsCurrentXPosArray .res $80
+cameloidsCurrentYPosArray .res $80
+cameloidsColorArray       .res $80
 
-cameloidsCurrentXPosArray                    .res $80
-cameloidsCurrentYPosArray                    .res $80
-cameloidsColorArray                          .res $80
-
-currentDeflexorXPosArray                     .res $80
-currentDeflexorYPosArray                     .res $80
-mysteryBonusPerformance                      .res $80
-charSetLocation                              .res $200
-scrollingTextStorage                         .res $200
+currentDeflexorXPosArray  .res $80
+currentDeflexorYPosArray  .res $80
+mysteryBonusPerformance   .res $80
+charSetLocation           .res $200
+scrollingTextStorage      .res $200
 
 .segment "CODE"
 ; The raw address for PPU's screen ram.
@@ -279,6 +273,9 @@ MATERIALIZE_OFFSET = $0D
 ; This is the header information for the ROM file.
 ; Lots of stuff configured in here which you have to look
 ; up online in order to understand it!
+; We've chosen an NROM cartridge type with CHR-RAM. This
+; allows us to change the CHR tiles during the game, for
+; example to create the grid scrolling effect. 
 .SEGMENT "HEADER"
 INES_MAPPER = 0 ; 0 = NROM
 INES_MIRROR = 1 ; 0 = HORIZONTAL MIRRORING, 1 = VERTICAL MIRRORING
@@ -301,17 +298,6 @@ INES_SRAM   = 0 ; 1 = BATTERY BACKED SRAM AT $6000-7FFF
 .WORD InitializeNES        ; Reset
 .WORD IRQInterruptHandler ; IRQ interrupt handler
 
-.segment "ZEROPAGE"
-NMI_LOCK       .res 1 ; PREVENTS NMI RE-ENTRY
-NMI_COUNT      .res 1 ; IS INCREMENTED EVERY NMI
-NMI_READY      .res 1 ; SET TO 1 TO PUSH A PPU FRAME UPDATE, 2 TO TURN RENDERING OFF NEXT NMI
-NMT_UPDATE_LEN .res 1 ; NUMBER OF BYTES IN NMT_UPDATE BUFFER
-CHR_UPDATE_LEN .res 1 ; NUMBER OF BYTES IN NMT_UPDATE BUFFER
-SCROLL_X       .res 1 ; X SCROLL POSITION
-SCROLL_Y       .res 1 ; Y SCROLL POSITION
-SCROLL_NMT     .res 1 ; NAMETABLE SELECT (0-3 = $2000,$2400,$2800,$2C00)
-TEMP           .res 1 ; TEMPORARY VARIABLE
-BATCH_SIZE     .res 1
 
 .segment "RAM"
 NMT_UPDATE     .res 256 ; NAMETABLE UPDATE ENTRY BUFFER FOR PPU UPDATE
@@ -450,17 +436,16 @@ InitializeNES
         LDA #%10001000
         STA $2000
 
-;        LDA paletteArrayLoPtr
-;        STA paletteLoPtr
-;        LDA paletteArrayHiPtr
-;        STA paletteHiPtr
-
-
         JMP InitializeGame
 
 ;-------------------------------------------------------
 ; MainNMIInterruptHandler
-; This is where the actual drawing to screen is done.
+; This is where the actual drawing to screen is done. This handler
+; runs during vblank so has only a very short amount of time to 
+; get things done. In the game loop we update the NMT_UPDATE array
+; with stuff to write to screen and in here we process it. Likewise
+; for updates to the gridTile array which defines the tile for the
+; current grid.
 ;-------------------------------------------------------
 MainNMIInterruptHandler
         ; save registers
@@ -1173,16 +1158,19 @@ b8174   DEY
         BNE b8172
         RTS 
 
+colorIndex = gridStartLoPtr
 ;-------------------------------------------------------------------------
-; DrawGridLineEntrySequence
+; DrawGridLines
 ;-------------------------------------------------------------------------
-DrawGridLineEntrySequence
+DrawGridLines
         LDA #>(SCREEN_RAM + $A0)
         STA screenBufferHiPtr
         LDA #<SCREEN_RAM + $A0
         STA screenBufferLoPtr
 
-b8183   LDA #$00
+GridLineLoop   
+        ; Fill a line with the grid character.
+        LDA #$00
         LDY #GRID_WIDTH
 b8187   STA (screenBufferLoPtr),Y
         DEY 
@@ -1196,7 +1184,7 @@ b8187   STA (screenBufferLoPtr),Y
         ADC #OFFSET_TO_COLOR_RAM
         STA screenBufferHiPtr
 
-        LDX gridStartLoPtr
+        LDX colorIndex
         LDA gridLineIntroSequenceColors,X
 
         LDY #GRID_WIDTH - 1
@@ -1205,24 +1193,31 @@ b819B   STA (screenBufferLoPtr),Y
         BNE b819B
         JSR WriteScreenBufferLine
 
+        ; Move to the next line.
         LDA screenBufferLoPtr
         ADC #GRID_WIDTH
         STA screenBufferLoPtr
         PLA 
         ADC #$00
         STA screenBufferHiPtr
-        INC gridStartLoPtr
-        LDA gridStartLoPtr
+
+        ; Increment hte color index.
+        INC colorIndex
+        LDA colorIndex
         CMP #$08
         BNE b81B7
 
         LDA #$01
-        STA gridStartLoPtr
+        STA colorIndex
 b81B7   DEC gridStartHiPtr
-        BNE b8183
+        BNE GridLineLoop
+
 
         RTS 
 
+linesToDraw = gridStartHiPtr
+remainingLinesToDraw = tempCounter
+currentColorIndex = tempCounter2
 ;---------------------------------------------------------------------------------
 ; BeginGameEntrySequence   
 ;---------------------------------------------------------------------------------
@@ -1237,13 +1232,14 @@ BeginGameEntrySequence
         JSR PlayNote1
         JSR PlayNote2
 
+        ; Set the Grid To Blank
         LDA #$00
         LDX #$08
 b81D0   STA gridTile - $0001,X
         DEX
         BNE b81D0
 
-        ; FIXME: For now skip the animation until we get it working.
+        ;FIMXE: get the line sequence working.
         JMP EnterMainGameLoop
 
         ; This sequence draws the grid animation when entering a level.
@@ -1251,18 +1247,20 @@ b81D0   STA gridTile - $0001,X
         ; In this loop each iteration adds a line to the top of the screen creating
         ; the effect of pulsing colored lines coming down the screen
         LDA #$10
-        STA tempCounter
+        STA remainingLinesToDraw
         LDA #$01
-        STA tempCounter2
+        STA currentColorIndex
 GridAnimLoop
-        LDA tempCounter2
-        STA gridStartLoPtr
+        LDA currentColorIndex
+        STA colorIndex
 
+        ; Decide how many lines to draw in DrawGridLines
         LDA #$11
         SEC 
-        SBC tempCounter
-        STA gridStartHiPtr
+        SBC remainingLinesToDraw
+        STA linesToDraw
 
+        ; Decide some sound stuff.
         LDA soundModeAndVol
         ;STA $D418    ;Select Filter Mode and Volume
         INC soundModeAndVol
@@ -1271,8 +1269,9 @@ GridAnimLoop
         BNE b81FC
         DEC soundModeAndVol
 
-b81FC   JSR DrawGridLineEntrySequence
+b81FC   JSR DrawGridLines
 
+        ; Do the line effect on each line in the grid. 
         LDX #$00
 b8201   LDA #$FF
         STA gridTile,X
@@ -1285,7 +1284,6 @@ b8201   LDA #$FF
         JSR WasteXYCycles
         PLA 
         TAX 
-        JSR PPU_Update
         JSR WasteAFewCycles
         LDA #$00
         STA gridTile,X
@@ -1293,11 +1291,11 @@ b8201   LDA #$FF
         CPX #$08
         BNE b8201
 
-        DEC tempCounter2
+        DEC currentColorIndex
         BNE b822A
         LDA #$07
-        STA tempCounter2
-b822A   DEC tempCounter
+        STA currentColorIndex
+b822A   DEC remainingLinesToDraw
         BNE GridAnimLoop
 
         ; This loop turns the lines into whole bars. It does this
@@ -1315,6 +1313,7 @@ b8230   LDA #$FF
         PLA 
         TAX 
         DEX 
+        JSR PPU_Update
         BNE b8230
 
         ; This loop turns the screen blue
@@ -1334,8 +1333,6 @@ b824B   STA COLOR_RAM + $0078,X
         JSR PlayChord
         JSR PlayNote1
 
-        ; This loop turns the blue screen into a grid by changing the value
-        ; of the character used to paint the screen.
 TurnBlueScreenToGridLoop
         LDX #$60
         LDA #$0F
@@ -1348,9 +1345,11 @@ b8274   DEY
         DEX 
         BNE b826F
 
+        ; This loop turns the blue screen into a grid by changing the value
+        ; of the character used to paint the screen.
         LDY #$08
 b827C   LDX gridStartHiPtr
-        LDA charsetData + $02D8,X
+        LDA charsetData + $05B0,X
         STA gridTile - $0001,Y
         INC gridStartHiPtr
         DEY
