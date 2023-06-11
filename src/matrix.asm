@@ -729,6 +729,25 @@ WriteGridStartCharacter
         RTS
 
 ;-------------------------------------------------------------------------
+; WriteBannerLine
+;-------------------------------------------------------------------------
+WriteBannerLine
+        LDA screenBufferLoPtr
+        PHA
+        LDA screenBufferHiPtr
+        PHA
+        LDA #>SCREEN_RAM
+        STA screenBufferHiPtr
+        LDA #<SCREEN_RAM
+        STA screenBufferLoPtr
+        JSR WriteScreenBufferLine
+        PLA
+        STA screenBufferHiPtr
+        PLA
+        STA screenBufferLoPtr
+        RTS
+
+;-------------------------------------------------------------------------
 ; WriteScreenBufferLine
 ;-------------------------------------------------------------------------
 WriteScreenBufferLine
@@ -1111,7 +1130,7 @@ b80EB   LDA txtBanner,X
         STA COLOR_RAM - $0001,X
         DEX 
         BNE b80EB
-        JSR WriteScreenBufferToNMT
+        JSR WriteBannerLine
         RTS 
 
 ;---------------------------------------------------------------------------------
@@ -2282,18 +2301,19 @@ b8893   RTS
 IncreaseScore
         TXA 
         PHA 
-b8896   INC SCREEN_RAM + $0009,X
-        LDA SCREEN_RAM + $0009,X
+b8896   INC SCREEN_RAM + $000A,X
+        LDA SCREEN_RAM + $000A,X
         CMP #$3A
         BNE b88A8
         LDA #$30
-        STA SCREEN_RAM + $0009,X
+        STA SCREEN_RAM + $000A,X
         DEX 
         BNE b8896
 b88A8   PLA 
         TAX 
         DEY 
         BNE IncreaseScore
+        JSR WriteBannerLine
         RTS 
 
 ;-------------------------------------------------------------------------
@@ -3968,11 +3988,11 @@ CheckIfZoneCleared
         DEC currentLevel
 b94C0   LDX #$F8
         TXS 
-        INC SCREEN_RAM + $0015
-        LDA SCREEN_RAM + $0015
+        INC SCREEN_RAM + $0016
+        LDA SCREEN_RAM + $0016
         CMP #$3A
         BNE b94D0
-        DEC SCREEN_RAM + $0015
+        DEC SCREEN_RAM + $0016
 b94D0   JMP CalculateMysteryBonusAndClearZone
 
 ;---------------------------------------------------------------------------------
@@ -4172,8 +4192,8 @@ colorsForEffects       .BYTE BLACK,BLUE,RED,PURPLE,GREEN,CYAN,YELLOW,WHITE
 ; DecrementLives   
 ;---------------------------------------------------------------------------------
 DecrementLives   
-        DEC SCREEN_RAM + $0015
-        LDA SCREEN_RAM + $0015
+        DEC SCREEN_RAM + $0016
+        LDA SCREEN_RAM + $0016
         CMP #$30
         BEQ b963C
         JMP RestartLevel
@@ -4841,7 +4861,7 @@ b9A97   DEY
         BNE b9A84
 
         LDX #$01
-b9AC3   LDA SCREEN_RAM + $0009,X
+b9AC3   LDA SCREEN_RAM + $000A,X
         CMP previousHiScore,X
         BEQ b9ACF
         BMI b9AD4
@@ -4857,7 +4877,7 @@ b9AD4   JSR DrawTitleScreen
 
 StoreHiScore 
         LDX #$07
-b9AE2   LDA SCREEN_RAM + $0009,X
+b9AE2   LDA SCREEN_RAM + $000A,X
         STA previousHiScore,X
         DEX 
         BNE b9AE2
@@ -4906,18 +4926,18 @@ ReduceScore
         LDA #$04
         STA explosionSoundControl
         LDX #$06
-b9B36   DEC SCREEN_RAM + $0009,X
-        LDA SCREEN_RAM + $0009,X
+b9B36   DEC SCREEN_RAM + $000A,X
+        LDA SCREEN_RAM + $000A,X
         CMP #$2F
         BNE b9B52
         LDA #$39
-        STA SCREEN_RAM + $0009,X
+        STA SCREEN_RAM + $000A,X
         DEX 
         BNE b9B36
 
         LDX #$07
         LDA #$30
-b9B4C   STA SCREEN_RAM + $0009,X
+b9B4C   STA SCREEN_RAM + $000A,X
         DEX 
         BNE b9B4C
 
