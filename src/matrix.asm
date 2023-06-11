@@ -15,6 +15,8 @@
 ;    May you find forgiveness for yourself and forgive others.
 ;    May you share freely, never taking more than you give.
 ;
+; FIXME: Add sound.
+
 .feature labels_without_colons
 .feature loose_char_term
 
@@ -130,91 +132,114 @@ BATCH_SIZE                                   .res 1
 ;
 ; **** POINTERS **** 
 ;
-OFFSET_TO_COLOR_RAM                          = $30
+OFFSET_TO_COLOR_RAM  = $30
 SCREEN_RAM_HIPTR_MAX = $64
 
-BLACK                                        = $00
-WHITE                                        = $01
-RED                                          = $02
-CYAN                                         = $03
-PURPLE                                       = $04
-GREEN                                        = $05
-BLUE                                         = $06
-YELLOW                                       = $07
-GRID_BLUE                                    = $66
+BLACK                = $00
+WHITE                = $01
+RED                  = $02
+CYAN                 = $03
+PURPLE               = $04
+GREEN                = $05
+BLUE                 = $06
+YELLOW               = $07
+GRID_BLUE            = $66
 
 
-GRID                                         = $00
-LEFT_ZAPPER                                  = $01
-BOTTOM_ZAPPER                                = $02
-HORIZ_LASER1                                 = $03
-HORIZ_LASER2                                 = $04
-VERTICAL_LASER1                              = $05
-VERTICAL_LASER2                              = $06
-SHIP                                         = $07
-BULLET_DOWN                                  = $08
-BULLET_UP                                    = $09
-BOMB                                         = $0A
-SHIP_LEFT                                    = $0B
-SHIP_RIGHT                                   = $0C
-POD1                                         = $0D
-POD2                                         = $0E
-POD3                                         = $0F
-POD4                                         = $10
-POD5                                         = $11
-POD6                                         = $12
-DROID1                                       = $13
-DROID2                                       = $14
-DROID3                                       = $15
-HALF_SHIP                                    = $16
-HALF_SHIP2                                   = $17
-MEN_LEFT                                     = $1B
-MEN_RIGHT                                    = $1C
-HIGH_LEFT                                    = $1D
-HIGH_RIGHT                                   = $1E
-RIGHT_ARROW                                  = $1F
-SPACE                                        = $20
-BOTTOM_ZAPPER_LEFT                           = $3A
-BOTTOM_ZAPPER_RIGHT                          = $3B
-LEFT_ZAPPER_TOP                              = $3C
-LEFT_ZAPPER_BOTTOM                           = $3D
-CROSS_HAIRS                                  = $5D
-CAMELOID                                     = $5E
-CAMELOID_LEFT                                = $5F
-CAMELOID_RIGHT                               = $60
-LEFT_CAMELOID                                = $61
-LEFT_CAMELOID_RIGHT                          = $62
-LEFT_CAMELOID_LEFT                           = $63
-BONUS_LEFT                                   = $64
-BONUS_RIGHT                                  = $65
-SNITCH_RUN_RIGHT                             = $66
-SNITCH_LEFT                                  = $68
-SNITCH_RIGHT                                 = $69
-SNITCH_RUN_LEFT                              = $6A
-SNITCH_LEFT1                                 = $6C
-SNITCH_RIGHT1                                = $6D
-SNITCH_WAVING                                = $6E
-SNITCH_WAVING1                               = $6F
-BULLET_LEFT                                  = $70
-BULLET_RIGHT                                 = $71
-DEFLEX1                                      = $72
-EXPLOSION1                                   = $73
-EXPLOSION2                                   = $74
-DEFLEX2                                      = $75
-EXPLOSTION3                                  = $76
-EXCLAMATION                                  = $7A
-DOT2                                         = $77
-BIG_DOT                                      = $78
-COMMA                                        = $79
+GRID                 = $00
+LEFT_ZAPPER          = $01
+BOTTOM_ZAPPER        = $02
+HORIZ_LASER1         = $03
+HORIZ_LASER2         = $04
+VERTICAL_LASER1      = $05
+VERTICAL_LASER2      = $06
+SHIP                 = $07
+BULLET_DOWN          = $08
+BULLET_UP            = $09
+BOMB                 = $0A
+SHIP_LEFT            = $0B
+SHIP_RIGHT           = $0C
+POD1                 = $0D
+POD2                 = $0E
+POD3                 = $0F
+POD4                 = $10
+POD5                 = $11
+POD6                 = $12
+DROID1               = $13
+DROID2               = $14
+DROID3               = $15
+HALF_SHIP            = $16
+HALF_SHIP2           = $17
+MEN_LEFT             = $1B
+MEN_RIGHT            = $1C
+HIGH_LEFT            = $1D
+HIGH_RIGHT           = $1E
+RIGHT_ARROW          = $1F
+SPACE                = $20
+BOTTOM_ZAPPER_LEFT   = $3A
+BOTTOM_ZAPPER_RIGHT  = $3B
+LEFT_ZAPPER_TOP      = $3C
+LEFT_ZAPPER_BOTTOM   = $3D
+CROSS_HAIRS          = $5D
+CAMELOID             = $5E
+CAMELOID_LEFT        = $5F
+CAMELOID_RIGHT       = $60
+LEFT_CAMELOID        = $61
+LEFT_CAMELOID_RIGHT  = $62
+LEFT_CAMELOID_LEFT   = $63
+BONUS_LEFT           = $64
+BONUS_RIGHT          = $65
+SNITCH_RUN_RIGHT     = $66
+SNITCH_LEFT          = $68
+SNITCH_RIGHT         = $69
+SNITCH_RUN_LEFT      = $6A
+SNITCH_LEFT1         = $6C
+SNITCH_RIGHT1        = $6D
+SNITCH_WAVING        = $6E
+SNITCH_WAVING1       = $6F
+BULLET_LEFT          = $70
+BULLET_RIGHT         = $71
+DEFLEX1              = $72
+EXPLOSION1           = $73
+EXPLOSION2           = $74
+DEFLEX2              = $75
+EXPLOSTION3          = $76
+EXCLAMATION          = $7A
+DOT2                 = $77
+BIG_DOT              = $78
+COMMA                = $79
 
-PAD_A              = $01
-PAD_B              = $02
-PAD_SELECT         = $04
-PAD_START          = $08
-PAD_U              = $10
-PAD_D              = $20
-PAD_L              = $40
-PAD_R              = $80
+PAD_A                = $01
+PAD_B                = $02
+PAD_SELECT           = $04
+PAD_START            = $08
+PAD_U                = $10
+PAD_D                = $20
+PAD_L                = $40
+PAD_R                = $80
+
+; The raw address for PPU's screen ram.
+PPU_SCREEN_RAM       = $2000
+
+PPUMASK              = $2001
+PPUADDR              = $2006
+PPUDATA              = $2007
+
+; SCREEN_RAM is our address to screenBuffer
+SCREEN_RAM           = $6020
+COLOR_RAM            = $9020
+
+GRID_HEIGHT        = 21
+GRID_WIDTH         = 31
+
+SCREEN_WIDTH         = 32
+SCREEN_HEIGHT        = 30
+
+GRID_TOP             = 2
+GRID_LEFT            = 2
+START_X_POS          = 15
+START_Y_POS          = 27
+MATERIALIZE_OFFSET   = $0D
 
 .segment "RAM"
 screenLinesLoPtrArray .res 30
@@ -246,30 +271,6 @@ mysteryBonusPerformance   .res $80
 charSetLocation           .res $200
 scrollingTextStorage      .res $200
 
-.segment "CODE"
-; The raw address for PPU's screen ram.
-PPU_SCREEN_RAM = $2000
-
-PPUMASK        = $2001
-PPUADDR        = $2006
-PPUDATA        = $2007
-
-; SCREEN_RAM is our address to screenBuffer
-SCREEN_RAM         = $6020
-COLOR_RAM          = $9020
-
-GRID_HEIGHT        = 21 
-GRID_WIDTH         = 31 
-
-SCREEN_WIDTH = 32
-SCREEN_HEIGHT = 30
-
-GRID_TOP           = 2
-GRID_LEFT          = 2
-START_X_POS        = 15
-START_Y_POS        = 27
-MATERIALIZE_OFFSET = $0D
-
 ; This is the header information for the ROM file.
 ; Lots of stuff configured in here which you have to look
 ; up online in order to understand it!
@@ -283,16 +284,14 @@ INES_SRAM   = 0 ; 1 = BATTERY BACKED SRAM AT $6000-7FFF
 
 .BYTE 'N', 'E', 'S', $1A ; ID
 .BYTE $02 ; 16K PRG CHUNK COUNT
-.BYTE $00 ; 8K CHR CHUNK COUNT
+.BYTE $00 ; 8K CHR CHUNK COUNT, 0 for CHR-RAM.
 .BYTE INES_MIRROR | (INES_SRAM << 1) | ((INES_MAPPER & $F) << 4)
 .BYTE (INES_MAPPER & %11110000)
 .BYTE $0, $0, $0, $0, $0, $0, $0, $0 ; PADDING
 
 ;
 ; Configure each of the NMT Interrupt handler, the Initialization routine
-; and the IRQ Interrupt handler.
-;
-
+; and the IRQ Interrupt handler. Execution starts at InitializeNES.
 .SEGMENT "VECTORS"
 .WORD MainNMIInterruptHandler ; NMI
 .WORD InitializeNES        ; Reset
@@ -308,14 +307,14 @@ PALETTE        .res 32  ; PALETTE BUFFER FOR PPU UPDATE
 
 example_palette
 .byte $0F,$11,$3C,$30 ; bg0 purple/pink
-.byte $0F,$09,$23,$38 ; bg1 green
-.byte $0F,$2A,$31,$38 ; bg2 blue
+.byte $0F,$35,$23,$38 ; bg1 green
+.byte $0F,$32,$31,$38 ; bg2 blue
 .byte $0F,$00,$35,$3A ; bg3 greyscale
 
 ; See https://taywee.github.io/NerdyNights/nerdynights/backgrounds.html
 ; for this insanely complicated system.
 bannerAttribute
-  .BYTE %00001010, %00001010, %0001010, %00001010, %00000101, %00000101, %00000101, %00001111
+  .BYTE %00001010, %00001010, %0001001, %00001010, %00001010, %00001110, %00000101, %00000101
 
 .segment "CODE"
 ;-------------------------------------------------------
@@ -324,65 +323,6 @@ bannerAttribute
 ;-------------------------------------------------------
 IRQInterruptHandler
         RTI
-
-;-------------------------------------------------------
-; AddToCHRUpdateTable
-;-------------------------------------------------------
-AddToCHRUpdateTable
-        STA currentCHRByte
-        PHA
-        TXA
-        PHA
-        TYA
-        PHA
-
-        LDX CHR_UPDATE_LEN
-
-        LDA chrUpdateHiPtr
-        STA CHR_UPDATE, X
-        INX
-
-        LDA chrUpdateLoPtr
-        STA CHR_UPDATE, X
-        INX
-
-        LDA currentCHRByte
-        STA CHR_UPDATE, X
-        INX
-
-        STX CHR_UPDATE_LEN
-
-        PLA
-        TAY
-        PLA
-        TAX
-        PLA
-        RTS
-      
-src = 0
-;-------------------------------------------------------
-; CopyCharsetToCHRRam
-;-------------------------------------------------------
-CopyCharsetToCHRRam
-        LDA #<charsetData  ; LOAD THE SOURCE ADDRESS INTO A POINTER IN ZERO PAGE
-        STA src
-        LDA #>charsetData
-        STA src+1
-
-        LDY #0       ; STARTING INDEX INTO THE FIRST PAGE
-        STY PPUMASK  ; TURN OFF RENDERING JUST IN CASE
-        STY PPUADDR  ; LOAD THE DESTINATION ADDRESS INTO THE PPU
-        STY PPUADDR
-        LDX #32      ; NUMBER OF 256-BYTE PAGES TO COPY
-@Loop:
-        LDA (src),Y  ; COPY ONE BYTE
-        STA PPUDATA
-        INY
-        BNE @Loop  ; REPEAT UNTIL WE FINISH THE PAGE
-        INC src+1  ; GO TO THE NEXT PAGE
-        DEX
-        BNE @Loop  ; REPEAT UNTIL WE'VE COPIED ENOUGH PAGES
-        RTS
 
 ;-------------------------------------------------------
 ; InitializeNES
@@ -628,6 +568,65 @@ PPU_Off
         :
           LDA NMI_READY
           BNE :-
+        RTS
+
+;-------------------------------------------------------
+; AddToCHRUpdateTable
+;-------------------------------------------------------
+AddToCHRUpdateTable
+        STA currentCHRByte
+        PHA
+        TXA
+        PHA
+        TYA
+        PHA
+
+        LDX CHR_UPDATE_LEN
+
+        LDA chrUpdateHiPtr
+        STA CHR_UPDATE, X
+        INX
+
+        LDA chrUpdateLoPtr
+        STA CHR_UPDATE, X
+        INX
+
+        LDA currentCHRByte
+        STA CHR_UPDATE, X
+        INX
+
+        STX CHR_UPDATE_LEN
+
+        PLA
+        TAY
+        PLA
+        TAX
+        PLA
+        RTS
+      
+src = 0
+;-------------------------------------------------------
+; CopyCharsetToCHRRam
+;-------------------------------------------------------
+CopyCharsetToCHRRam
+        LDA #<charsetData  ; LOAD THE SOURCE ADDRESS INTO A POINTER IN ZERO PAGE
+        STA src
+        LDA #>charsetData
+        STA src+1
+
+        LDY #0       ; STARTING INDEX INTO THE FIRST PAGE
+        STY PPUMASK  ; TURN OFF RENDERING JUST IN CASE
+        STY PPUADDR  ; LOAD THE DESTINATION ADDRESS INTO THE PPU
+        STY PPUADDR
+        LDX #32      ; NUMBER OF 256-BYTE PAGES TO COPY
+@Loop:
+        LDA (src),Y  ; COPY ONE BYTE
+        STA PPUDATA
+        INY
+        BNE @Loop  ; REPEAT UNTIL WE FINISH THE PAGE
+        INC src+1  ; GO TO THE NEXT PAGE
+        DEX
+        BNE @Loop  ; REPEAT UNTIL WE'VE COPIED ENOUGH PAGES
         RTS
 
 ;-------------------------------------------------------
@@ -1125,9 +1124,9 @@ SetupScreen
 
 .SEGMENT  "RODATA"
 txtBanner   =*-$01
-                            .BYTE $23,$24,$22,$25,$26,$27,$20,$19 ; MATRIX
+                            .BYTE $23,$24,$22,$25,$26,$27,$20,$20,$19 ; MATRIX
                             .BYTE $1A
-                            .BYTE " 0000000  ", $07, " 5 SHIPS REMAINING  !!!!!"
+                            .BYTE " 0000000  ", $07, " 5 SHIPS            !!!!!"
 colorsBannerText            .BYTE $21,$43,$43,$43,$43,$43,$43,$40
                             .BYTE $44,$44,$40,$47,$47,$47,$47,$47
                             .BYTE $47,$47,$40,$40,$45,$40,$43,$40
